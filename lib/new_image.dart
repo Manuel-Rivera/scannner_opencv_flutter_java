@@ -69,49 +69,6 @@ class _NewImageState extends State<NewImage> {
     await completar.future;
   }
 
-  void getImageSize() {
-    //RenderBox imageBox;
-    // ignore: avoid_print
-    //print(imageBox.size);
-    // ignore: avoid_print
-    print(widget.file);
-    final Image img = Image.file(widget.file);
-    final ImageStream imgstream = img.image.resolve(ImageConfiguration.empty);
-    imgstream.addListener(ImageStreamListener((info, _) {
-      setState(() {
-        // ignore: avoid_print
-        print(MediaQuery.of(context).size);
-        width = MediaQuery.of(context).size.width;
-        height = MediaQuery.of(context).size.height;
-        //imagePixelSize = ImageSizeGetter.getSize(widget.file);
-
-        //imageBox = key.currentContext?.findRenderObject() as RenderBox;
-        // ignore: avoid_print
-        //print(imageBox.size);
-        // ignore: avoid_print
-        //width = info.image.width.toDouble();
-        // ignore: avoid_print
-        //height = info.image.height.toDouble();
-        tl = const Offset(0, 0);
-        tr = Offset(width - 0, 0);
-        bl = Offset(0, height - 0);
-        br = Offset(width - 0, height - 0);
-        isFile = true;
-      });
-    }));
-
-    //width = imageBox.size.width;
-    //height = imageBox.size.height;
-    //imagePixelSize = ImageSizGetter.getSize(widget.file);
-    // tl = const Offset(20, 20);
-    // tr = Offset(width - 20, 20);
-    // bl = Offset(20, height - 20);
-    // br = Offset(width - 20, height - 20);
-    // setState(() {
-    //   isFile = true;
-    // });
-  }
-
   @override
   Widget build(BuildContext context) {
     // ignore: avoid_print
@@ -188,7 +145,7 @@ class _NewImageState extends State<NewImage> {
                                     });
                                   } else {
                                     // ignore: avoid_print
-                                    print(height);
+                                    //print(height);
                                   }
                                 },
                                 onPanUpdate: ((details) {
@@ -497,7 +454,7 @@ class _NewImageState extends State<NewImage> {
                                           .pushReplacement(MaterialPageRoute(
                                               builder: (context) => ShowImage(
                                                     tl: tl,
-                                                    tr: bl,
+                                                    tr: tr,
                                                     bl: bl,
                                                     br: br,
                                                     width: width,

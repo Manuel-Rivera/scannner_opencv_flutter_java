@@ -37,6 +37,8 @@ class _CropImageState extends State<CropImage> {
     //RenderBox imageBox;
     imgstream.addListener(ImageStreamListener((image, synchronousCall) {
       setState(() {
+        // ignore: avoid_print
+        // ignore: avoid_print
         //Sin ebargo el imageBox no tiene el size de la imagen -> no se usa en este caso ya que espera el key y este no se obtiene hasta que se carga la imagen
         //imageBox = key.currentContext?.findRenderObject() as RenderBox;
         //TODO:Se optienen los datos de la imagen
@@ -54,6 +56,7 @@ class _CropImageState extends State<CropImage> {
         width = cwidth - 20;
         double cheight = MediaQuery.of(context).size.height;
         height = cheight - 200;
+
         //Se cargan los valores de las variables para Render Box
         tl = const Offset(30, 30);
         tr = Offset(width - 30, 30);

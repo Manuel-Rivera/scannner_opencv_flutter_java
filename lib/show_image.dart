@@ -58,15 +58,30 @@ class _ShowImageState extends State<ShowImage> {
             baseOffset: 0, extentOffset: nameController.text.length);
       }
     });
+
     tlX = (widget.pixelsw / widget.width) * widget.tl.dx;
     trX = (widget.pixelsw / widget.width) * widget.tr.dx;
     blX = (widget.pixelsw / widget.width) * widget.bl.dx;
     brX = (widget.pixelsw / widget.width) * widget.br.dx;
 
-    tlY = (widget.pixelsw / widget.height) * widget.tl.dy;
-    trY = (widget.pixelsw / widget.height) * widget.tr.dy;
-    blY = (widget.pixelsw / widget.height) * widget.bl.dy;
-    brY = (widget.pixelsw / widget.height) * widget.br.dy;
+    tlY = (widget.pixelsh / widget.height) * widget.tl.dy;
+    trY = (widget.pixelsh / widget.height) * widget.tr.dy;
+    blY = (widget.pixelsh / widget.height) * widget.bl.dy;
+    brY = (widget.pixelsh / widget.height) * widget.br.dy;
+
+    // ignore: avoid_print
+    print("ddd");
+    // ignore: avoid_print
+    print(tlX);
+    // ignore: avoid_print
+    print(trX);
+    // ignore: avoid_print
+    print(blY);
+    // ignore: avoid_print
+    print(brY);
+    // ignore: avoid_print
+    print("ff");
+
     convertToGray();
     BackButtonInterceptor.add(myInterceptor);
   }
@@ -254,7 +269,7 @@ class _ShowImageState extends State<ShowImage> {
     });
     setState(() {
       // ignore: avoid_print
-      print(bytesArray);
+      //print(bytesArray);
       bytes = bytesArray;
       whiteboardBytes = bytesArray;
     });
