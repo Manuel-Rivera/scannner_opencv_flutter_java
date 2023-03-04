@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
-import 'package:document_scanner/crop_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'crop_image.dart';
 
 class ShowImage extends StatefulWidget {
   final File file;
@@ -99,12 +100,15 @@ class _ShowImageState extends State<ShowImage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  Text("Discart this scan",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    "Discart this scan",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   Divider(thickness: 2),
                   Text(
-                      "This will discart the scans you have captured. Are you sure",
-                      style: TextStyle(color: Colors.grey))
+                    "This will discart the scans you have captured. Are you sure",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
               actions: [
@@ -115,9 +119,14 @@ class _ShowImageState extends State<ShowImage> {
                       style: TextStyle(color: Colors.black),
                     )),
                 OutlinedButton(
-                    onPressed: () {},
-                    child: const Text("Discart",
-                        style: TextStyle(color: Colors.red)))
+                  onPressed: () {},
+                  child: const Text(
+                    "Discart",
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
               ],
             )));
     return true;
@@ -172,17 +181,21 @@ class _ShowImageState extends State<ShowImage> {
                   : isRotating
                       ? const Center(
                           child: SizedBox(
-                              height: 150,
-                              width: 100,
-                              child: Center(
-                                  child: SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation(
-                                            Colors.black),
-                                      )))))
+                            height: 150,
+                            width: 100,
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Colors.black),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
                       : Center(
                           child: Container(
                             padding: const EdgeInsets.all(10),

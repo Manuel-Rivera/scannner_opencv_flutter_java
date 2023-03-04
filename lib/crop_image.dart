@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:document_scanner/crop_painter.dart';
 import 'package:flutter/material.dart';
+
+import 'crop_painter.dart';
 
 // ignore: must_be_immutable
 class CropImage extends StatefulWidget {
@@ -243,8 +244,10 @@ class _CropImageState extends State<CropImage> {
         child: Center(
           child: Column(
             children: [
-              const Text("Drag the handles to adjust the borders. You can",
-                  style: TextStyle(color: Colors.white, fontSize: 18)),
+              const Text(
+                "Drag the handles to adjust the borders. You can",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
@@ -266,10 +269,11 @@ class _CropImageState extends State<CropImage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                      onPressed: () {
-                        //TODO:RETAKE
-                      },
-                      child: const Text("Retake")),
+                    onPressed: () {
+                      //TODO:RETAKE
+                    },
+                    child: const Text("Retake"),
+                  ),
                   Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(

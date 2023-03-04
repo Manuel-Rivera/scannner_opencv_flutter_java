@@ -1,13 +1,14 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:document_scanner/Model/docuement_model.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pdf/pdf.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../Model/docuement_model.dart';
 
 class DocumentProvider extends ChangeNotifier {
   List<DocumentModel> allDocuments = [];

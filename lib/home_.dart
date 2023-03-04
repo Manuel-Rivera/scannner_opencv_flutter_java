@@ -1,12 +1,13 @@
 import 'dart:io';
 
-import 'package:document_scanner/Providers/document_provider.dart';
-import 'package:document_scanner/drawer.dart';
-import 'package:document_scanner/new_image.dart';
-import 'package:document_scanner/pdf_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+
+import 'Providers/document_provider.dart';
+import 'drawer.dart';
+import 'new_image.dart';
+import 'pdf_screen.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});

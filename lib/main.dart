@@ -1,7 +1,8 @@
-import 'package:document_scanner/Providers/document_provider.dart';
-import 'package:document_scanner/home_.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'Providers/document_provider.dart';
+import 'home_.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
