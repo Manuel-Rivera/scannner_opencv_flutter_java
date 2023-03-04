@@ -141,18 +141,19 @@ class _HomeState extends State<Home> {
                     padding:
                         const EdgeInsets.only(left: 12, top: 12, right: 12),
                     child: Container(
-                        decoration: const BoxDecoration(
-                            border: Border(
-                                left: BorderSide(color: Colors.grey),
-                                right: BorderSide(color: Colors.grey),
-                                top: BorderSide(color: Colors.grey))),
-                        child: Image.file(
-                            File(Provider.of<DocumentProvider>(context)
-                                .allDocuments[index]
-                                .documentPath),
-                            fit: BoxFit.cover,
-                            height: 150,
-                            width: 130)),
+                      decoration: const BoxDecoration(
+                          border: Border(
+                              left: BorderSide(color: Colors.grey),
+                              right: BorderSide(color: Colors.grey),
+                              top: BorderSide(color: Colors.grey))),
+                      // child: Image.file(
+                      //     File(Provider.of<DocumentProvider>(context)
+                      //         .allDocuments[index]
+                      //         .documentPath),
+                      //     fit: BoxFit.cover,
+                      //     height: 150,
+                      //     width: 130)
+                    ),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,12 +167,14 @@ class _HomeState extends State<Home> {
   }
 
   void chooseIImage(ImageSource source) async {
-    final xfile = (await ImagePicker().pickImage(source: source));
-    final fileGallery = File(xfile!.path);
-
-    if (!mounted) return;
-
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: ((context) => NewImage(fileGallery, animatedListKey))));
+    final xfile = await ImagePicker().pickImage(source: source);
+    late final File fileGallery;
+    if (mounted && xfile != null) {
+      fileGallery = File(xfile.path);
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: ((context) => NewImage(fileGallery, animatedListKey))));
+    } else {
+      return;
+    }
   }
 }
