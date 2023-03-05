@@ -22,8 +22,8 @@ class _NewImageState extends State<NewImage> {
   late Offset tl, tr, bl, br;
   bool isLoading = false;
   late double width, height;
-  late double pixelsw, pixelsh;
   final GlobalKey _containerkey = GlobalKey();
+  late Size imagePixel;
   @override
   void initState() {
     super.initState();
@@ -175,16 +175,13 @@ class _NewImageState extends State<NewImage> {
                                 //Size? containersize =
                                 //    _containerkey.currentContext?.size as Size;
                                 // ignore: avoid_print
+                                imagePixel = ImageSizeGetter.getSize(
+                                    FileInput(widget.file));
+
                                 width =
                                     _containerkey.currentContext!.size!.width;
                                 height =
                                     _containerkey.currentContext!.size!.height;
-
-                                var imagePixel = ImageSizeGetter.getSize(
-                                    FileInput(widget.file));
-
-                                pixelsh = imagePixel.height.toDouble();
-                                pixelsw = imagePixel.width.toDouble();
 
                                 setState(() {
                                   tl = const Offset(0, 0);
@@ -296,8 +293,7 @@ class _NewImageState extends State<NewImage> {
                                                     file: widget.file,
                                                     animatedListKey:
                                                         widget.animatedListKey,
-                                                    pixelsh: pixelsh,
-                                                    pixelsw: pixelsw,
+                                                    imagePixel: imagePixel,
                                                   )));
                                     },
                                     child: const Text(
@@ -310,14 +306,17 @@ class _NewImageState extends State<NewImage> {
                                     width: 60,
                                     height: 20,
                                     child: Center(
-                                        child: SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                valueColor:
-                                                    AlwaysStoppedAnimation(
-                                                        Colors.white))))),
+                                      child: SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation(
+                                              Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                       ))
                 ],
               )

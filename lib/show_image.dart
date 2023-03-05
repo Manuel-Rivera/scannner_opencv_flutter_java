@@ -4,16 +4,22 @@ import 'dart:io';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_size_getter/file_input.dart';
+import 'package:image_size_getter/image_size_getter.dart';
+import 'package:provider/provider.dart';
 
+import 'Providers/document_provider.dart';
 import 'crop_image.dart';
 
+// ignore: must_be_immutable
 class ShowImage extends StatefulWidget {
   final File file;
   final Offset tl, tr, bl, br;
   final double height, width;
   final GlobalKey<AnimatedListState> animatedListKey;
-  final double pixelsw, pixelsh;
-  const ShowImage(
+  late Size imagePixel;
+
+  ShowImage(
       {super.key,
       required this.file,
       required this.bl,
@@ -22,8 +28,7 @@ class ShowImage extends StatefulWidget {
       required this.tr,
       required this.height,
       required this.width,
-      required this.pixelsw,
-      required this.pixelsh,
+      required this.imagePixel,
       required this.animatedListKey});
 
   @override
@@ -32,11 +37,14 @@ class ShowImage extends StatefulWidget {
 
 class _ShowImageState extends State<ShowImage> {
   TextEditingController nameController = TextEditingController();
+  late PersistentBottomSheetController controller;
   final _focusNode = FocusNode();
   MethodChannel channel = const MethodChannel('opencv');
-  var whiteboardBytes;
+  dynamic whiteboardBytes;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  var bytes;
+  dynamic bytes;
+  dynamic originalBytes;
+  dynamic grayBytes;
   bool isRotating = false;
   bool isBottomOpened = false;
   int index = 0;
@@ -49,6 +57,11 @@ class _ShowImageState extends State<ShowImage> {
   late double trY;
   late double blY;
   late double brY;
+  bool isGrayBytes = false;
+  bool isOriginalBytes = false;
+  bool isWhiteBoardBytes = false;
+  String canvasType = "whiteboard";
+
   @override
   void initState() {
     super.initState();
@@ -60,15 +73,15 @@ class _ShowImageState extends State<ShowImage> {
       }
     });
 
-    tlX = (widget.pixelsw / widget.width) * widget.tl.dx;
-    trX = (widget.pixelsw / widget.width) * widget.tr.dx;
-    blX = (widget.pixelsw / widget.width) * widget.bl.dx;
-    brX = (widget.pixelsw / widget.width) * widget.br.dx;
+    tlX = (widget.imagePixel.width / widget.width) * widget.tl.dx;
+    trX = (widget.imagePixel.width / widget.width) * widget.tr.dx;
+    blX = (widget.imagePixel.width / widget.width) * widget.bl.dx;
+    brX = (widget.imagePixel.width / widget.width) * widget.br.dx;
 
-    tlY = (widget.pixelsh / widget.height) * widget.tl.dy;
-    trY = (widget.pixelsh / widget.height) * widget.tr.dy;
-    blY = (widget.pixelsh / widget.height) * widget.bl.dy;
-    brY = (widget.pixelsh / widget.height) * widget.br.dy;
+    tlY = (widget.imagePixel.height / widget.height) * widget.tl.dy;
+    trY = (widget.imagePixel.height / widget.height) * widget.tr.dy;
+    blY = (widget.imagePixel.height / widget.height) * widget.bl.dy;
+    brY = (widget.imagePixel.height / widget.height) * widget.br.dy;
 
     // ignore: avoid_print
     print("ddd");
@@ -154,8 +167,23 @@ class _ShowImageState extends State<ShowImage> {
                             },
                             icon: const Icon(Icons.clear, color: Colors.white)),
                         TextButton(
-                            onPressed: () {
+                            onPressed: () async {
                               //TODO:SAVE HAS PDF
+                              Navigator.of(context).pop();
+                              await widget.file
+                                  .writeAsBytes(bytes)
+                                  .then((_) async {
+                                ImageSizeGetter.getSize(FileInput(widget.file));
+                                Provider.of<DocumentProvider>(context,
+                                        listen: false)
+                                    .saveDocument(
+                                        name: nameController.text,
+                                        documentPath: widget.file.path,
+                                        dateTime: DateTime.now(),
+                                        shareLink: "",
+                                        animatedListKey: widget.animatedListKey,
+                                        angle: angle);
+                              });
                             },
                             child: const Text("save has pdf"))
                       ],
@@ -199,8 +227,8 @@ class _ShowImageState extends State<ShowImage> {
                       : Center(
                           child: Container(
                             padding: const EdgeInsets.all(10),
-                            constraints: const BoxConstraints(
-                                maxHeight: 300, maxWidth: 250),
+                            //constraints: const BoxConstraints(
+                            //+    maxHeight: 300, maxWidth: 250),
                             child: Image.memory(bytes),
                           ),
                         )
@@ -240,8 +268,45 @@ class _ShowImageState extends State<ShowImage> {
               isBottomOpened = false;
               Navigator.of(context).pop();
             }
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: ((context) => CropImage(widget.file))));
+            Navigator.of(context)
+                .push(
+              MaterialPageRoute(
+                builder: (context) => CropImage(widget.file),
+              ),
+            )
+                .then((value) {
+              if (value != null) {
+                tlX = value[1];
+                tlY = value[2];
+                trX = value[3];
+                trY = value[4];
+                blX = value[5];
+                blY = value[6];
+                brX = value[7];
+                brY = value[8];
+                setState(() {
+                  bytes = value[0];
+                  isGrayBytes = false;
+                  isOriginalBytes = false;
+                  isWhiteBoardBytes = false;
+                });
+              }
+            });
+          }
+          if (index == 2) {
+            if (isBottomOpened) {
+              Navigator.of(context).pop();
+              isBottomOpened = false;
+            } else {
+              isBottomOpened = true;
+              BottomSheet bottomSheet = BottomSheet(
+                onClosing: () {},
+                builder: (context) => colorBottomsheet(),
+                enableDrag: true,
+              );
+              controller = scaffoldKey.currentState!
+                  .showBottomSheet((context) => bottomSheet);
+            }
           }
         },
         items: const [
@@ -268,6 +333,171 @@ class _ShowImageState extends State<ShowImage> {
     );
   }
 
+  Widget colorBottomsheet() {
+    if (isOriginalBytes == false) {
+      //TODO:GRAYandoriginal
+      grayandoriginal();
+    }
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (originalBytes != null) {
+                Navigator.of(context).pop();
+                isBottomOpened = false;
+                canvasType = 'original';
+                Timer(const Duration(microseconds: 500), () {
+                  angle = 0;
+                  setState(() {
+                    bytes = originalBytes;
+                  });
+                });
+              }
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: isOriginalBytes
+                      ? Image.memory(
+                          originalBytes,
+                          fit: BoxFit.fill,
+                          height: 120,
+                        )
+                      : const SizedBox(
+                          height: 120,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation(Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+                const Text("Original"),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              // ignore: avoid_print
+              print("whiteboard");
+              Navigator.of(context).pop();
+              isBottomOpened = false;
+              angle = 0;
+              canvasType = "whiteboard";
+              Timer(
+                const Duration(microseconds: 500),
+                () {
+                  setState(() {
+                    bytes = whiteboardBytes;
+                  });
+                },
+              );
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: isWhiteBoardBytes
+                      ? Image.memory(
+                          whiteboardBytes,
+                          fit: BoxFit.fill,
+                          height: 120,
+                        )
+                      : const SizedBox(
+                          height: 120,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation(Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+                const Text("Whiteboard")
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              // ignore: avoid_print
+              print("gray");
+              Navigator.of(context).pop();
+              isBottomOpened = false;
+              angle = 0;
+              canvasType = "gray";
+              Timer(
+                const Duration(microseconds: 500),
+                () {
+                  setState(() {
+                    bytes = grayBytes;
+                  });
+                },
+              );
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: isWhiteBoardBytes
+                      ? Image.memory(
+                          grayBytes,
+                          fit: BoxFit.fill,
+                          height: 120,
+                        )
+                      : const SizedBox(
+                          height: 120,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation(Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+                const Text("Grayscale")
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<dynamic> convertToGray() async {
     var bytesArray = await channel.invokeMethod('convertToGray', {
       'filePath': widget.file.path,
@@ -287,5 +517,69 @@ class _ShowImageState extends State<ShowImage> {
       whiteboardBytes = bytesArray;
     });
     return bytesArray;
+  }
+
+  Future<void> grayandoriginal() async {
+    Future.delayed(const Duration(seconds: 1), () {
+      channel.invokeMethod('gray', {
+        'filePath': widget.file.path,
+        'tl_x': tlX,
+        'tl_y': tlY,
+        'tr_x': trX,
+        'tr_y': trY,
+        'bl_x': blX,
+        'bl_y': blY,
+        'br_x': brX,
+        'br_y': brY,
+      });
+      channel.invokeMethod('whiteboard', {
+        'filePath': widget.file.path,
+        'tl_x': tlX,
+        'tl_y': tlY,
+        'tr_x': trX,
+        'tr_y': trY,
+        'bl_x': blX,
+        'bl_y': blY,
+        'br_x': brX,
+        'br_y': brY,
+      });
+      channel.invokeMethod('original', {
+        'filePath': widget.file.path,
+        'tl_x': tlX,
+        'tl_y': tlY,
+        'tr_x': trX,
+        'tr_y': trY,
+        'bl_x': blX,
+        'bl_y': blY,
+        'br_x': brX,
+        'br_y': brY,
+      });
+    });
+    Timer(const Duration(seconds: 7), () {
+      // ignore: avoid_print
+      print("this started");
+      channel.invokeMethod('grayCompleted').then((value) {
+        grayBytes = value;
+        isGrayBytes = true;
+      });
+      channel.invokeMethod('whiteboardCompleted').then((value) {
+        whiteboardBytes = value;
+        isWhiteBoardBytes = true;
+      });
+      channel.invokeMethod('originalCompleted').then((value) {
+        originalBytes = value;
+        isOriginalBytes = true;
+        if (isBottomOpened) {
+          Navigator.pop(context);
+          BottomSheet bottomSheet = BottomSheet(
+            onClosing: () {},
+            builder: (context) => colorBottomsheet(),
+            enableDrag: true,
+          );
+          controller = scaffoldKey.currentState!
+              .showBottomSheet((context) => bottomSheet);
+        }
+      });
+    });
   }
 }
