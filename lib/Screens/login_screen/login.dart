@@ -5,14 +5,25 @@ import 'package:tuple/tuple.dart';
 
 
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
   Login({super.key});
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
   final TextEditingController userController   = TextEditingController();
+
   final TextEditingController paswordController   = TextEditingController();
+
   final GlobalKey<FormState> keyLogin = GlobalKey<FormState>();
+
+  bool cargando = false;
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: const Text('UMSNH'),
@@ -54,6 +65,8 @@ class Login extends StatelessWidget {
             SizedBox(height: 16), // Add some space between the text fields
             ElevatedButton(
               onPressed: () {
+                FocusManager.instance.primaryFocus?.unfocus(); //Oculta el teclado
+                
                 print("ALGO:"+keyLogin.currentState!.validate().toString());
                 if (!keyLogin.currentState!.validate()){
                   return;
@@ -64,7 +77,7 @@ class Login extends StatelessWidget {
                   String mensaje = tuple.item2;
                   print("entero: "+login.toString());
                   print("myString: "+mensaje.toString());
-    
+                  
                   if(login==1){
                     Navigator.push(
                       context,
@@ -78,6 +91,13 @@ class Login extends StatelessWidget {
                 });
               }, 
               child: Text("Entrar")),
+
+              if(cargando)
+                Positioned(
+                  bottom: 10,
+                  left: size.width * 0.5 - 30,
+                  child: const _loading(),
+                  ),
           ],
         ),
       ),
@@ -85,10 +105,12 @@ class Login extends StatelessWidget {
     ),
     );
   }
-}
-
 
 Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String pwd) async {
+  cargando = true;
+  await Future.delayed(const Duration(seconds: 5));
+  cargando = false;
+  return Tuple2(1, "OK");
   final response = await http.post(
     Uri.parse('http://192.168.56.1:8080/siia/respLogin'),
     body: {
@@ -114,6 +136,32 @@ Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String p
   }
   return Tuple2(0, response.statusCode.toString());
 }
+
+}
+
+class _loading extends StatelessWidget {
+  const _loading({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 60,
+      width: 60,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        shape: BoxShape.circle
+      ),
+      child: const CircularProgressIndicator(
+        color: Colors.blue,
+      ),
+    );
+  }
+}
+
+
+
 
 void muestraAlerta(BuildContext context, String mensaje){
   showDialog(
