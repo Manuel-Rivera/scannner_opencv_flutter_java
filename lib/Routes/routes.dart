@@ -12,7 +12,7 @@ class Routes {
         route: 'login',
         icon: Icons.login_outlined,
         name: "Login",
-        screen: const Login()),
+        screen: Login()),
     OptionsRoutes(
         route: 'home',
         icon: Icons.home_filled,

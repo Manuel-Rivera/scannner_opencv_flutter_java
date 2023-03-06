@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:document_scanner/login.dart';
 
 import 'Providers/document_provider.dart';
 import 'Routes/routes.dart';
@@ -9,16 +8,11 @@ import 'Screens/login_screen/login.dart';
 void main() {
   runApp(MaterialApp(
     title: 'Navigation Basics',
-    home: LoginSesion(),
+    home: Login(),
   ));
 }
 
-/*
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
-}
-*/
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -45,7 +39,7 @@ class _MyAppState extends State<MyApp> {
                 backgroundColor: ThemeData.dark().canvasColor),
             textSelectionTheme:
                 const TextSelectionThemeData(selectionColor: Colors.blueGrey)),
-        home: const Login(),
+        home: Login(),
         initialRoute: 'home',
         routes: Routes.getAppRoutes(),
         onGenerateRoute: (settings) => Routes.onGenerateRoute(settings),
