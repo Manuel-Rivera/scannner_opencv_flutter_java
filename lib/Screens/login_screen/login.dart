@@ -65,12 +65,8 @@ class _LoginState extends State<Login> {
             SizedBox(height: 16), // Add some space between the text fields
             ElevatedButton(
               onPressed: () {
-                 Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const MyApp()),
-                    );
                 FocusManager.instance.primaryFocus?.unfocus(); //Oculta el teclado
-                cargando = true;
+                
                 print("ALGO:"+keyLogin.currentState!.validate().toString());
                 if (!keyLogin.currentState!.validate()){
                   return;
@@ -81,7 +77,7 @@ class _LoginState extends State<Login> {
                   String mensaje = tuple.item2;
                   print("entero: "+login.toString());
                   print("myString: "+mensaje.toString());
-                  cargando = false;
+                  
                   if(login==1){
                     Navigator.push(
                       context,
@@ -109,33 +105,12 @@ class _LoginState extends State<Login> {
     ),
     );
   }
-}
-
-class _loading extends StatelessWidget {
-  const _loading({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      width: 60,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        shape: BoxShape.circle
-      ),
-      child: const CircularProgressIndicator(
-        color: Colors.blue,
-      ),
-    );
-  }
-}
-
 
 Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String pwd) async {
+  cargando = true;
   await Future.delayed(const Duration(seconds: 5));
-  
+  cargando = false;
+  return Tuple2(1, "OK");
   final response = await http.post(
     Uri.parse('http://192.168.56.1:8080/siia/respLogin'),
     body: {
@@ -161,6 +136,32 @@ Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String p
   }
   return Tuple2(0, response.statusCode.toString());
 }
+
+}
+
+class _loading extends StatelessWidget {
+  const _loading({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 60,
+      width: 60,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        shape: BoxShape.circle
+      ),
+      child: const CircularProgressIndicator(
+        color: Colors.blue,
+      ),
+    );
+  }
+}
+
+
+
 
 void muestraAlerta(BuildContext context, String mensaje){
   showDialog(
