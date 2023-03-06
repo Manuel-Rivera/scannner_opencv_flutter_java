@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:document_scanner/crop_painter.dart';
-import 'package:document_scanner/show_image.dart';
 import 'package:flutter/material.dart';
+
+import 'crop_painter.dart';
+import 'show_image.dart';
 
 // ignore: must_be_immutable
 class NewImage extends StatefulWidget {
@@ -68,172 +69,173 @@ class _NewImageState extends State<NewImage> {
     }));
     await completar.future;
   }
-
+/*
   @override
   Widget build(BuildContext context) {
     // ignore: avoid_print
     return FutureBuilder(
-        future: _imgFuture,
-        builder: ((context, snapshot) {
-          // ignore: avoid_print
-          print(snapshot.connectionState);
-          return Container(
-            child: snapshot.connectionState == ConnectionState.done
-                ? Scaffold(
-                    backgroundColor: ThemeData.dark().canvasColor,
-                    key: _scaffoldKey,
-                    body: Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Stack(
-                            children: [
-                              GestureDetector(
-                                onPanDown: (details) {
-                                  double x1 = details.localPosition.dx;
-                                  double y1 = details.localPosition.dy;
-                                  double x2 = tl.dx;
-                                  double y2 = tl.dy;
-                                  double x3 = tr.dx;
-                                  double y3 = tr.dy;
-                                  double x4 = bl.dx;
-                                  double y4 = bl.dy;
-                                  double x5 = br.dx;
-                                  double y5 = br.dy;
-                                  if (sqrt((x2 - x1) * (x2 - x1) +
-                                              (y2 - y1) * (y2 - y1)) <
-                                          50 &&
-                                      x1 >= 0 &&
-                                      y1 >= 0 &&
-                                      x1 < width / 2 &&
-                                      y1 < height / 2) {
-                                    // ignore: avoid_print
-                                    print(details.localPosition);
-                                    setState(() {
-                                      tl = details.localPosition;
-                                    });
-                                  } else if (sqrt((x3 - x1) * (x3 - x1) +
-                                              (y3 - y1) * (y3 - y1)) <
-                                          50 &&
-                                      x1 >= width / 2 &&
-                                      y1 >= 0 &&
-                                      x1 < width &&
-                                      y1 < height / 2) {
-                                    setState(() {
-                                      tr = details.localPosition;
-                                    });
-                                  } else if (sqrt((x4 - x1) * (x4 - x1) +
-                                              (y4 - y1) * (y4 - y1)) <
-                                          50 &&
-                                      x1 >= 0 &&
-                                      y1 >= height / 2 &&
-                                      x1 < width / 2 &&
-                                      y1 < height) {
-                                    setState(() {
-                                      bl = details.localPosition;
-                                    });
-                                  } else if (sqrt((x5 - x1) * (x5 - x1) +
-                                              (y5 - y1) * (y5 - y1)) <
-                                          50 &&
-                                      x1 >= width / 2 &&
-                                      y1 >= height / 2 &&
-                                      x1 < width &&
-                                      y1 < height) {
-                                    setState(() {
-                                      br = details.localPosition;
-                                    });
-                                  } else {
-                                    // ignore: avoid_print
-                                    //print(height);
-                                  }
-                                },
-                                onPanUpdate: ((details) {
-                                  double x1 = details.localPosition.dx;
-                                  double y1 = details.localPosition.dy;
-                                  double x2 = tl.dx;
-                                  double y2 = tl.dy;
-                                  double x3 = tr.dx;
-                                  double y3 = tr.dy;
-                                  double x4 = bl.dx;
-                                  double y4 = bl.dy;
-                                  double x5 = br.dx;
-                                  double y5 = br.dy;
-                                  if (sqrt((x2 - x1) * (x2 - x1) +
-                                              (y2 - y1) * (y2 - y1)) <
-                                          50 &&
-                                      x1 >= 0 &&
-                                      y1 >= 0 &&
-                                      x1 < width / 2 &&
-                                      y1 < height / 2) {
-                                    // ignore: avoid_print
-                                    print(details.localPosition);
-                                    setState(() {
-                                      tl = details.localPosition;
-                                    });
-                                  } else if (sqrt((x3 - x1) * (x3 - x1) +
-                                              (y3 - y1) * (y3 - y1)) <
-                                          50 &&
-                                      x1 >= width / 2 &&
-                                      y1 >= 0 &&
-                                      x1 < width &&
-                                      y1 < height / 2) {
-                                    setState(() {
-                                      tr = details.localPosition;
-                                    });
-                                  } else if (sqrt((x4 - x1) * (x4 - x1) +
-                                              (y4 - y1) * (y4 - y1)) <
-                                          50 &&
-                                      x1 >= 0 &&
-                                      y1 >= height / 2 &&
-                                      x1 < width / 2 &&
-                                      y1 < height) {
-                                    setState(() {
-                                      bl = details.localPosition;
-                                    });
-                                  } else if (sqrt((x5 - x1) * (x5 - x1) +
-                                              (y5 - y1) * (y5 - y1)) <
-                                          50 &&
-                                      x1 >= width / 2 &&
-                                      y1 >= height / 2 &&
-                                      x1 < width &&
-                                      y1 < height) {
-                                    setState(() {
-                                      br = details.localPosition;
-                                    });
-                                  }
-                                }),
-                                child: SafeArea(
-                                    child: Container(
-                                        width: width,
-                                        height: height,
-                                        color: ThemeData.dark().canvasColor,
-                                        //TODO:VALIDAR TAMAÑO DE IMAGEN
-                                        //constraints: BoxConstraints(
-                                        //     maxHeight: height, maxWidth: width),
-                                        child: Image.file(
-                                          widget.file,
-                                          key: key,
-                                        ))),
-                              ),
-                              isFile
-                                  ? SafeArea(
-                                      child: CustomPaint(
-                                      painter: CropPainter(tl, tr, bl, br),
-                                    ))
-                                  : const SizedBox()
-                            ],
-                          ),
-                          bottomSheet()
-                        ],
-                      ),
-                    ))
-                : const Text("Cargando Imagen"),
-          );
-        }));
-  }
+      future: _imgFuture,
+      builder: ((context, snapshot) {
+        // ignore: avoid_print
+        print(snapshot.connectionState);
+        return Container(
+          child: snapshot.connectionState == ConnectionState.done
+              ? Scaffold(
+                  backgroundColor: ThemeData.dark().canvasColor,
+                  key: _scaffoldKey,
+                  body: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Stack(
+                          children: [
+                            GestureDetector(
+                              onPanDown: (details) {
+                                double x1 = details.localPosition.dx;
+                                double y1 = details.localPosition.dy;
+                                double x2 = tl.dx;
+                                double y2 = tl.dy;
+                                double x3 = tr.dx;
+                                double y3 = tr.dy;
+                                double x4 = bl.dx;
+                                double y4 = bl.dy;
+                                double x5 = br.dx;
+                                double y5 = br.dy;
+                                if (sqrt((x2 - x1) * (x2 - x1) +
+                                            (y2 - y1) * (y2 - y1)) <
+                                        50 &&
+                                    x1 >= 0 &&
+                                    y1 >= 0 &&
+                                    x1 < width / 2 &&
+                                    y1 < height / 2) {
+                                  // ignore: avoid_print
+                                  print(details.localPosition);
+                                  setState(() {
+                                    tl = details.localPosition;
+                                  });
+                                } else if (sqrt((x3 - x1) * (x3 - x1) +
+                                            (y3 - y1) * (y3 - y1)) <
+                                        50 &&
+                                    x1 >= width / 2 &&
+                                    y1 >= 0 &&
+                                    x1 < width &&
+                                    y1 < height / 2) {
+                                  setState(() {
+                                    tr = details.localPosition;
+                                  });
+                                } else if (sqrt((x4 - x1) * (x4 - x1) +
+                                            (y4 - y1) * (y4 - y1)) <
+                                        50 &&
+                                    x1 >= 0 &&
+                                    y1 >= height / 2 &&
+                                    x1 < width / 2 &&
+                                    y1 < height) {
+                                  setState(() {
+                                    bl = details.localPosition;
+                                  });
+                                } else if (sqrt((x5 - x1) * (x5 - x1) +
+                                            (y5 - y1) * (y5 - y1)) <
+                                        50 &&
+                                    x1 >= width / 2 &&
+                                    y1 >= height / 2 &&
+                                    x1 < width &&
+                                    y1 < height) {
+                                  setState(() {
+                                    br = details.localPosition;
+                                  });
+                                } else {
+                                  // ignore: avoid_print
+                                  //print(height);
+                                }
+                              },
+                              onPanUpdate: ((details) {
+                                double x1 = details.localPosition.dx;
+                                double y1 = details.localPosition.dy;
+                                double x2 = tl.dx;
+                                double y2 = tl.dy;
+                                double x3 = tr.dx;
+                                double y3 = tr.dy;
+                                double x4 = bl.dx;
+                                double y4 = bl.dy;
+                                double x5 = br.dx;
+                                double y5 = br.dy;
+                                if (sqrt((x2 - x1) * (x2 - x1) +
+                                            (y2 - y1) * (y2 - y1)) <
+                                        50 &&
+                                    x1 >= 0 &&
+                                    y1 >= 0 &&
+                                    x1 < width / 2 &&
+                                    y1 < height / 2) {
+                                  // ignore: avoid_print
+                                  print(details.localPosition);
+                                  setState(() {
+                                    tl = details.localPosition;
+                                  });
+                                } else if (sqrt((x3 - x1) * (x3 - x1) +
+                                            (y3 - y1) * (y3 - y1)) <
+                                        50 &&
+                                    x1 >= width / 2 &&
+                                    y1 >= 0 &&
+                                    x1 < width &&
+                                    y1 < height / 2) {
+                                  setState(() {
+                                    tr = details.localPosition;
+                                  });
+                                } else if (sqrt((x4 - x1) * (x4 - x1) +
+                                            (y4 - y1) * (y4 - y1)) <
+                                        50 &&
+                                    x1 >= 0 &&
+                                    y1 >= height / 2 &&
+                                    x1 < width / 2 &&
+                                    y1 < height) {
+                                  setState(() {
+                                    bl = details.localPosition;
+                                  });
+                                } else if (sqrt((x5 - x1) * (x5 - x1) +
+                                            (y5 - y1) * (y5 - y1)) <
+                                        50 &&
+                                    x1 >= width / 2 &&
+                                    y1 >= height / 2 &&
+                                    x1 < width &&
+                                    y1 < height) {
+                                  setState(() {
+                                    br = details.localPosition;
+                                  });
+                                }
+                              }),
+                              child: SafeArea(
+                                  child: Container(
+                                      width: width,
+                                      height: height,
+                                      color: ThemeData.dark().canvasColor,
+                                      //TODO:VALIDAR TAMAÑO DE IMAGEN
+                                      //constraints: BoxConstraints(
+                                      //     maxHeight: height, maxWidth: width),
+                                      child: Image.file(
+                                        widget.file,
+                                        key: key,
+                                      ))),
+                            ),
+                            isFile
+                                ? SafeArea(
+                                    child: CustomPaint(
+                                    painter: CropPainter(tl, tr, bl, br),
+                                  ))
+                                : const SizedBox()
+                          ],
+                        ),
+                        bottomSheet()
+                      ],
+                    ),
+                  ))
+              : const Text("Cargando Imagen"),
+        );
+      }),
+    );
+  }*/
 
-  /* @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ThemeData.dark().canvasColor,
@@ -382,7 +384,7 @@ class _NewImageState extends State<NewImage> {
       ),
     );
   }
- */
+
   Widget bottomSheet() {
     return Container(
         color: ThemeData.dark().canvasColor,

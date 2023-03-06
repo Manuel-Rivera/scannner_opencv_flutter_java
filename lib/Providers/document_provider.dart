@@ -1,13 +1,14 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:document_scanner/Model/docuement_model.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pdf/pdf.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../Model/docuement_model.dart';
 
 class DocumentProvider extends ChangeNotifier {
   List<DocumentModel> allDocuments = [];
@@ -15,7 +16,7 @@ class DocumentProvider extends ChangeNotifier {
     allDocuments = [];
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     // ignore: avoid_print
-    print(sharedPreferences.getKeys());
+    //print(sharedPreferences.getKeys());
     sharedPreferences.getKeys().forEach((key) {
       var jsonDocument = json.decode(sharedPreferences.getString(key) ?? "");
       DocumentModel document = DocumentModel(
@@ -26,8 +27,9 @@ class DocumentProvider extends ChangeNotifier {
           shareLink: jsonDocument['shareLink']);
       allDocuments.add(document);
       // ignore: avoid_print
-      print(document.documentPath);
+      //print(document.documentPath);
     });
+
     allDocuments.sort((a, b) => b.dateTime.compareTo(a.dateTime));
     DocumentModel document = DocumentModel(
         name: "firstCard55466222",

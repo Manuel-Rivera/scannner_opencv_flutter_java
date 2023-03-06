@@ -1,8 +1,10 @@
-import 'package:document_scanner/Providers/document_provider.dart';
-import 'package:document_scanner/home_.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:document_scanner/login.dart';
+
+import 'Providers/document_provider.dart';
+import 'Routes/routes.dart';
+import 'Screens/login_screen/login.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -36,13 +38,17 @@ class _MyAppState extends State<MyApp> {
     return ChangeNotifierProvider.value(
       value: DocumentProvider(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
             appBarTheme: AppBarTheme(color: ThemeData.dark().canvasColor),
             floatingActionButtonTheme: FloatingActionButtonThemeData(
                 backgroundColor: ThemeData.dark().canvasColor),
             textSelectionTheme:
                 const TextSelectionThemeData(selectionColor: Colors.blueGrey)),
-        home: const Home(),
+        home: const Login(),
+        initialRoute: 'home',
+        routes: Routes.getAppRoutes(),
+        onGenerateRoute: (settings) => Routes.onGenerateRoute(settings),
       ),
     );
   }
