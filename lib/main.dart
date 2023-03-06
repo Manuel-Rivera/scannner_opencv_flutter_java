@@ -2,11 +2,21 @@ import 'package:document_scanner/Providers/document_provider.dart';
 import 'package:document_scanner/home_.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:document_scanner/login.dart';
 
+void main() {
+  runApp(MaterialApp(
+    title: 'Navigation Basics',
+    home: LoginSesion(),
+  ));
+}
+
+/*
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
+*/
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
