@@ -3,13 +3,14 @@ import 'dart:io';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_full_pdf_viewer/full_pdf_viewer_scaffold.dart';
 import 'package:flutter_share/flutter_share.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
-import 'Model/docuement_model.dart';
-import 'Providers/document_provider.dart';
+import '../../Model/docuement_model.dart';
+import '../../Providers/document_provider.dart';
 
 // ignore: must_be_immutable
 class PDFScreen extends StatefulWidget {
@@ -18,7 +19,7 @@ class PDFScreen extends StatefulWidget {
 
   PDFScreen(
       {super.key,
-      required document,
+      required this.document,
       required GlobalKey<AnimatedListState> animatedListKey});
 
   @override

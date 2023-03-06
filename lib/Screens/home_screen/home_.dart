@@ -6,9 +6,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
-import 'Providers/document_provider.dart';
-import 'drawer.dart';
-import 'new_image.dart';
+import '../../Providers/document_provider.dart';
+import '../scanner_screen/drawer.dart';
+import '../scanner_screen/new_image.dart';
+import '../scanner_screen/pdf_screen.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -84,18 +85,30 @@ class _HomeState extends State<Home> {
                 child: AnimatedList(
                   key: animatedListKey,
                   itemBuilder: ((context, index, animation) {
-                    // ignore: avoid_print
-                    print(index);
-                    if (index ==
+                    bool isEmptyDocuemnt =
                         Provider.of<DocumentProvider>(context)
-                                .allDocuments
-                                .length -
-                            1) {
-                      // ignore: avoid_print
-                      print("last");
-                      return const SizedBox(height: 100);
+                            .allDocuments
+                            .isEmpty;
+                    //* Se valida que existan documentos guardados
+                    if (!isEmptyDocuemnt) {
+                      if (index ==
+                          Provider.of<DocumentProvider>(context)
+                                  .allDocuments
+                                  .length -
+                              1) {
+                        // ignore: avoid_print
+                        print("last");
+                        return const SizedBox(height: 100);
+                      }
+                      return buildDocumentCard(index, animation);
+                    } else {
+                      return Container(
+                        color: Colors.white,
+                        child: const Center(
+                          child: Text("Error al cargar archivos"),
+                        ),
+                      );
                     }
-                    return buildDocumentCard(index, animation);
                   }),
                   initialItemCount: Provider.of<DocumentProvider>(context)
                       .allDocuments
@@ -124,13 +137,15 @@ class _HomeState extends State<Home> {
         child: StatefulBuilder(
           builder: (context, setState) => GestureDetector(
             onTap: () {
-              /*Navigator.of(context).push(MaterialPageRoute(
+              //print(Provider.of<DocumentProvider>(context).allDocuments);
+              Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => PDFScreen(
-                  document: Provider.of<DocumentProvider>(context)
-                      .allDocuments[index],
+                  document:
+                      Provider.of<DocumentProvider>(context, listen: false)
+                          .allDocuments[index],
                   animatedListKey: animatedListKey,
                 ),
-              ));*/
+              ));
             },
             child: Card(
               color: ThemeData.dark().cardColor,
@@ -146,10 +161,12 @@ class _HomeState extends State<Home> {
                         const EdgeInsets.only(left: 12, top: 12, right: 12),
                     child: Container(
                         decoration: const BoxDecoration(
-                            border: Border(
-                                left: BorderSide(color: Colors.grey),
-                                right: BorderSide(color: Colors.grey),
-                                top: BorderSide(color: Colors.grey))),
+                          border: Border(
+                            left: BorderSide(color: Colors.grey),
+                            right: BorderSide(color: Colors.grey),
+                            top: BorderSide(color: Colors.grey),
+                          ),
+                        ),
                         child: Image.file(
                             File(Provider.of<DocumentProvider>(context)
                                 .allDocuments[index]

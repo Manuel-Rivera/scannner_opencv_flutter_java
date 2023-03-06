@@ -8,7 +8,7 @@ import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart';
 import 'package:provider/provider.dart';
 
-import 'Providers/document_provider.dart';
+import '../../Providers/document_provider.dart';
 import 'crop_image.dart';
 
 // ignore: must_be_immutable

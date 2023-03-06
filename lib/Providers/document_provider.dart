@@ -16,7 +16,7 @@ class DocumentProvider extends ChangeNotifier {
     allDocuments = [];
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     // ignore: avoid_print
-    print(sharedPreferences.getKeys());
+    //print(sharedPreferences.getKeys());
     sharedPreferences.getKeys().forEach((key) {
       var jsonDocument = json.decode(sharedPreferences.getString(key) ?? "");
       DocumentModel document = DocumentModel(
@@ -27,8 +27,9 @@ class DocumentProvider extends ChangeNotifier {
           shareLink: jsonDocument['shareLink']);
       allDocuments.add(document);
       // ignore: avoid_print
-      print(document.documentPath);
+      //print(document.documentPath);
     });
+
     allDocuments.sort((a, b) => b.dateTime.compareTo(a.dateTime));
     DocumentModel document = DocumentModel(
         name: "firstCard55466222",
