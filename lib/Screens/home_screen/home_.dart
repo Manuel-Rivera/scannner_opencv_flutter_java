@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +11,7 @@ import '../../Providers/document_provider.dart';
 import '../scanner_screen/drawer.dart';
 import '../scanner_screen/new_image.dart';
 import '../scanner_screen/pdf_screen.dart';
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -223,6 +225,17 @@ class _HomeState extends State<Home> {
                               onPressed: () {},
                             ),
                             IconButton(
+                              icon: Icon(
+                                Icons.send_and_archive,
+                                color: ThemeData.dark().colorScheme.secondary,
+                              ),
+                              onPressed: () {
+                                var documentPath = Provider.of<DocumentProvider>(context, listen: false).allDocuments[index].pdfPath;
+                                print("PATH: "+documentPath);
+                                sendFile(documentPath);
+                              },
+                            ),
+                            IconButton(
                                 icon: Icon(
                                   Icons.more_vert,
                                   color: ThemeData.dark().colorScheme.secondary,
@@ -262,6 +275,53 @@ class _HomeState extends State<Home> {
           ),
         ));
   }
+
+  Future<void> sendFile(String path) async {
+  var request = http.MultipartRequest(
+    'POST',
+    Uri.parse('http://192.168.56.1:8080/siia/carPDF'),
+  );
+
+  // Add the file parameter to the request
+  var file = File(path);
+  var stream = http.ByteStream(file.openRead());
+  var length = await file.length();
+  var multipartFile = http.MultipartFile('archi', stream, length,
+      filename: 'example.pdf');
+
+  request.files.add(multipartFile);
+
+  // Add other parameters to the request
+  request.fields['num'] = '2';
+  request.fields['dir'] = 'archivos';
+  request.fields['id'] = '15';
+  request.fields['coments'] = 'Desde flutter';
+
+// Set the session ID as a cookie in the request headers
+  request.headers['cookie'] = 'JSESSIONID=582BDF0EF0E8007DAC7598C12BDE0129';
+
+
+  // Send the request and get the response
+  var response = await request.send();
+  var responseBody = await response.stream.bytesToString();
+  print(responseBody);
+
+
+  /*
+  request.files.add(multipartFile);
+
+  // Add other parameters to the request
+  request.fields['usr'] = '1';
+  request.fields['pwd'] = '1';
+  request.fields['B1'] = 'entrar';
+  request.fields['TAB'] = '1';
+
+  // Send the request and get the response
+  var response = await request.send();
+  var responseBody = await response.stream.bytesToString();
+  print(responseBody);
+  */
+}
 
   void chooseIImage(ImageSource source) async {
     final xfile = await ImagePicker().pickImage(source: source);

@@ -108,9 +108,9 @@ class _LoginState extends State<Login> {
 
 Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String pwd) async {
   cargando = true;
-  await Future.delayed(const Duration(seconds: 5));
-  cargando = false;
-  return Tuple2(1, "OK");
+  setState(() {});
+  //await Future.delayed(const Duration(seconds: 5));
+  
   final response = await http.post(
     Uri.parse('http://192.168.56.1:8080/siia/respLogin'),
     body: {
@@ -121,6 +121,8 @@ Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String p
     },
   );
 
+  cargando = false;
+  setState(() {});
   if (response.statusCode == 200) {
     
     if(response.body.contains("OK")){
