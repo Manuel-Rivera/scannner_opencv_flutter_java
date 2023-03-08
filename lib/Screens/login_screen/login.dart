@@ -1,7 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:document_scanner/main.dart';
 import 'package:tuple/tuple.dart';
+/*
+import 'package:dio/dio.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+
+
+final Dio dio = Dio();
+final CookieJar cookieJar = CookieJar();
+*/
+String idSesion ="";
 
 
 
@@ -67,31 +79,30 @@ class _LoginState extends State<Login> {
               onPressed: () {
                 FocusManager.instance.primaryFocus?.unfocus(); //Oculta el teclado
                 
-                print("ALGO:"+keyLogin.currentState!.validate().toString());
+                //Validacion de los campos del formulario (que no esten vacios)
                 if (!keyLogin.currentState!.validate()){
                   return;
                 }
-                  
+                //Llamada al login
                 callLogin(context, userController.text, paswordController.text).then((tuple) {
                   int login = tuple.item1;
                   String mensaje = tuple.item2;
-                  print("entero: "+login.toString());
-                  print("myString: "+mensaje.toString());
-                  
+                  //Login correcto
                   if(login==1){
+                    //Llamada a una nueva ventana
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const MyApp()),
                     );
                   }
-                  else{
-                    print("myString"+mensaje.toString());
+                  else{//Error en login
                     muestraAlerta(context, mensaje.toString());
                   }
                 });
               }, 
               child: Text("Entrar")),
 
+              //Imagen de carga
               if(cargando)
                 Positioned(
                   bottom: 10,
@@ -106,6 +117,7 @@ class _LoginState extends State<Login> {
     );
   }
 
+//Post al login del servlet
 Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String pwd) async {
   cargando = true;
   setState(() {});
@@ -123,9 +135,11 @@ Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String p
 
   cargando = false;
   setState(() {});
+  //Verificacion de la respuesta del servidor
   if (response.statusCode == 200) {
     
     if(response.body.contains("OK")){
+      idSesion=response.body.toString().split(":")[1];  //Obtencion del Id de la sesion 
       return Tuple2(1, "OK");
     }
 
@@ -139,6 +153,55 @@ Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String p
   return Tuple2(0, response.statusCode.toString());
 }
 
+/*
+//Intento de Post al login del servlet usando otra libreria
+Future<Tuple2<int, String>> callLogin2(BuildContext context, String urs, String pwd) async {
+  cargando = true;
+  setState(() {});
+  
+  dio.interceptors.add(CookieManager(cookieJar));
+  //await Future.delayed(const Duration(seconds: 5));
+  //String idSesion = "";
+  Response respuesta = await Dio().post(
+    'http://192.168.56.1:8080/siia/respLogin',
+    queryParameters: {
+      'usr': urs,
+      'pwd': pwd,
+      'B1': 'entrar',
+      'TAB': '1',
+    },
+  );
+
+  cargando = false;
+  setState(() {});
+
+
+  if (respuesta.statusCode == 200) {
+    
+    if(respuesta.data.contains("OK")){
+        //Obtencion del Id de la sesion 
+        idSesion=respuesta.data.toString().split(":")[1];
+        var cookies = <Cookie>[];
+        cookies.add(Cookie('session_id', idSesion));
+        //Guarda el ID de la sesion para futuras peticiones
+        cookieJar.saveFromResponse(
+          respuesta.requestOptions.uri,
+          cookies,
+        );
+
+      return Tuple2(1, "OK");
+    }
+
+    if(respuesta.data.contains("No corresponde Contraseña")){
+      return Tuple2(0, "No corresponde Contraseña");
+    }
+    else if ( respuesta.data.contains("No existe Usuario")){
+      return Tuple2(0, "No existe Usuario");
+    }
+  }
+  return Tuple2(0, respuesta.statusCode.toString());
+}
+*/
 }
 
 class _loading extends StatelessWidget {

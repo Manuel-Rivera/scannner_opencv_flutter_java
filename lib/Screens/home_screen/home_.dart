@@ -1,16 +1,19 @@
 import 'dart:async';
 import 'dart:io';
+//import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
+import 'package:xml/xml.dart';
 
 import '../../Providers/document_provider.dart';
 import '../scanner_screen/drawer.dart';
 import '../scanner_screen/new_image.dart';
 import '../scanner_screen/pdf_screen.dart';
+import '../login_screen/login.dart';
 
 
 class Home extends StatefulWidget {
@@ -276,7 +279,32 @@ class _HomeState extends State<Home> {
         ));
   }
 
-  Future<void> sendFile(String path) async {
+Future<String> numeroArchivo() async {
+  var request = http.MultipartRequest(
+    'POST',
+    Uri.parse('http://192.168.56.1:8080/siia/ldXML'),
+  );
+
+  // Parametros 
+  request.fields['lista'] = 'lista';
+  request.fields['cuso'] = 'comun.cntArchis';
+  
+  // Set the session ID as a cookie in the request headers
+  request.headers['cookie'] = 'JSESSIONID=$idSesion';
+  
+  // Send the request and get the response
+  var response = await request.send();
+  var responseBody = await response.stream.bytesToString();
+  print("***** LISTA"+responseBody);
+  final document = XmlDocument.parse(responseBody);
+  final cntElement = document.findAllElements('CNT').first;
+  final cntValue = cntElement.text;
+  return cntValue;
+  
+}
+
+
+Future<void> sendFile(String path) async {
   var request = http.MultipartRequest(
     'POST',
     Uri.parse('http://192.168.56.1:8080/siia/carPDF'),
@@ -291,14 +319,17 @@ class _HomeState extends State<Home> {
 
   request.files.add(multipartFile);
 
+  //Secuencia del archivo a subir
+  String numero = await numeroArchivo();
+
   // Add other parameters to the request
-  request.fields['num'] = '2';
+  request.fields['num'] = numero;
   request.fields['dir'] = 'archivos';
-  request.fields['id'] = '15';
+  request.fields['id'] = numero;
   request.fields['coments'] = 'Desde flutter';
 
-// Set the session ID as a cookie in the request headers
-  request.headers['cookie'] = 'JSESSIONID=582BDF0EF0E8007DAC7598C12BDE0129';
+  // Set the session ID as a cookie in the request headers
+  request.headers['cookie'] = 'JSESSIONID=$idSesion';
 
 
   // Send the request and get the response
@@ -306,22 +337,32 @@ class _HomeState extends State<Home> {
   var responseBody = await response.stream.bytesToString();
   print(responseBody);
 
-
-  /*
-  request.files.add(multipartFile);
-
-  // Add other parameters to the request
-  request.fields['usr'] = '1';
-  request.fields['pwd'] = '1';
-  request.fields['B1'] = 'entrar';
-  request.fields['TAB'] = '1';
-
-  // Send the request and get the response
-  var response = await request.send();
-  var responseBody = await response.stream.bytesToString();
-  print(responseBody);
-  */
 }
+
+/*
+Future<void> sendFile2(String path) async {
+  final headers = {'Cookie': idSesion};
+
+  print(headers);
+
+  FormData formData = FormData.fromMap({
+    'archi': await MultipartFile.fromFile(path, filename: 'upload.txt'),
+    'num': '2',
+    'dir': 'archivos',
+    'id': '15',
+    'coments': 'Desde flutter2',
+  });
+  
+  Response request = await Dio().post(
+    'http://192.168.56.1:8080/siia/carPDF',
+    data: formData,
+    options: Options(headers: headers)
+  );
+
+  print(request.data);
+
+}
+*/
 
   void chooseIImage(ImageSource source) async {
     final xfile = await ImagePicker().pickImage(source: source);
