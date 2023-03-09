@@ -1,23 +1,16 @@
 import 'dart:io';
 import 'dart:convert';
 
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:document_scanner/main.dart';
 import 'package:tuple/tuple.dart';
 
-/*
-import 'package:dio/dio.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:cookie_jar/cookie_jar.dart';
+import '../home_screen/home_.dart';
 
 
-final Dio dio = Dio();
-final CookieJar cookieJar = CookieJar();
-*/
 String idSesion ="";
-
-
 
 class Login extends StatefulWidget {
   Login({super.key});
@@ -95,7 +88,7 @@ class _LoginState extends State<Login> {
                       //Llamada a una nueva ventana
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const MyApp()),
+                        MaterialPageRoute(builder: (context) => Home()),
                       );
                     }
                     else{//Error en login
@@ -105,6 +98,7 @@ class _LoginState extends State<Login> {
                 }
               }, 
               child: Text("Entrar")),
+              
 
               //Imagen de carga
               if(cargando)
