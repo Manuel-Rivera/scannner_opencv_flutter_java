@@ -234,7 +234,6 @@ class _HomeState extends State<Home> {
                               ),
                               onPressed: () {
                                 var documentPath = Provider.of<DocumentProvider>(context, listen: false).allDocuments[index].pdfPath;
-                                print("PATH: "+documentPath);
                                 sendFile(documentPath);
                               },
                             ),
@@ -295,19 +294,19 @@ Future<String> numeroArchivo() async {
   // Send the request and get the response
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
-  print("***** LISTA"+responseBody);
+  
+  //La respuesta viene en un HTML asi que se convierte en un XmlDocument
   final document = XmlDocument.parse(responseBody);
   final cntElement = document.findAllElements('CNT').first;
   final cntValue = cntElement.text;
-  return cntValue;
-  
+  return cntValue;  
 }
 
 
 Future<void> sendFile(String path) async {
   var request = http.MultipartRequest(
     'POST',
-    Uri.parse('http://192.168.56.1:8080/siia/carPDF'),
+    Uri.parse('http://192.168.56.1:8080/siia/carPDF2'),
   );
 
   // Add the file parameter to the request

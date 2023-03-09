@@ -6,10 +6,8 @@ import 'Routes/routes.dart';
 import 'Screens/login_screen/login.dart';
 
 void main() {
-  runApp(MaterialApp(
-    title: 'Navigation Basics',
-    home: Login(),
-  ));
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
 }
 
 
@@ -40,7 +38,7 @@ class _MyAppState extends State<MyApp> {
             textSelectionTheme:
                 const TextSelectionThemeData(selectionColor: Colors.blueGrey)),
         home: Login(),
-        initialRoute: 'home',
+        initialRoute: 'login',
         routes: Routes.getAppRoutes(),
         onGenerateRoute: (settings) => Routes.onGenerateRoute(settings),
       ),

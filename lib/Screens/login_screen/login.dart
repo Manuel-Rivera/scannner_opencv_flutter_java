@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:document_scanner/main.dart';
 import 'package:tuple/tuple.dart';
+
 /*
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
@@ -83,22 +85,24 @@ class _LoginState extends State<Login> {
                 if (!keyLogin.currentState!.validate()){
                   return;
                 }
-                //Llamada al login
-                callLogin(context, userController.text, paswordController.text).then((tuple) {
-                  int login = tuple.item1;
-                  String mensaje = tuple.item2;
-                  //Login correcto
-                  if(login==1){
-                    //Llamada a una nueva ventana
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const MyApp()),
-                    );
-                  }
-                  else{//Error en login
-                    muestraAlerta(context, mensaje.toString());
-                  }
-                });
+                if(!cargando){ //Evita una multiples llamadas al Login si ya hay una en proceso
+                  //Llamada al login
+                  callLogin(context, userController.text, paswordController.text).then((tuple) {
+                    int login = tuple.item1;
+                    String mensaje = tuple.item2;
+                    //Login correcto
+                    if(login==1){
+                      //Llamada a una nueva ventana
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MyApp()),
+                      );
+                    }
+                    else{//Error en login
+                      muestraAlerta(context, mensaje.toString());
+                    }
+                  });
+                }
               }, 
               child: Text("Entrar")),
 
@@ -124,7 +128,7 @@ Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String p
   //await Future.delayed(const Duration(seconds: 5));
   
   final response = await http.post(
-    Uri.parse('http://192.168.56.1:8080/siia/respLogin'),
+    Uri.parse('http://192.168.56.1:8080/siia/respLogin2'),
     body: {
       'usr': urs,
       'pwd': pwd,
@@ -135,20 +139,22 @@ Future<Tuple2<int, String>> callLogin(BuildContext context, String urs, String p
 
   cargando = false;
   setState(() {});
+  
+  var jsonResponse = json.decode(response.body);
+  //print("jsonResponse: $jsonResponse");
+  
   //Verificacion de la respuesta del servidor
   if (response.statusCode == 200) {
     
-    if(response.body.contains("OK")){
-      idSesion=response.body.toString().split(":")[1];  //Obtencion del Id de la sesion 
-      return Tuple2(1, "OK");
+    if(jsonResponse.containsKey('ERROR')){
+      return Tuple2(0, jsonResponse["ERROR"]);
     }
 
-    if(response.body.contains("No corresponde Contraseña")){
-      return Tuple2(0, "No corresponde Contraseña");
+    if(jsonResponse.containsKey('OK')){
+      idSesion=jsonResponse["JSESSIONID"]; //Obtencion del Id de la sesion 
+      return Tuple2(1, "OK");
     }
-    else if ( response.body.contains("No existe Usuario")){
-      return Tuple2(0, "No existe Usuario");
-    }
+    
   }
   return Tuple2(0, response.statusCode.toString());
 }
