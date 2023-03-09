@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:http/http.dart' as http;
+import '../../Providers/login_provider.dart';
 import 'dart:convert';
+
 
 import '../../ui/input_decorations.dart';
 import '../../widgets/widgets.dart';
 import '../home_screen/home_.dart';
 
 
-String idSesion ="";
+//String idSesion ="";
 
 
 class Login extends StatefulWidget {
@@ -23,7 +26,7 @@ class _LoginState extends State<Login>{
   final TextEditingController userController   = TextEditingController();
   final TextEditingController paswordController   = TextEditingController();
   final GlobalKey<FormState> keyLogin = GlobalKey<FormState>();
-  bool cargando = false;
+  //bool cargando = false;
 
   @override 
   Widget build(BuildContext context){
@@ -77,7 +80,7 @@ class _LoginState extends State<Login>{
                           if (!keyLogin.currentState!.validate()){
                             return;
                           }
-                          if(!cargando){ //Evita una multiples llamadas al Login si ya hay una en proceso
+                          if(!context.read<loginProvider>().obtener_cargando()){ //Evita una multiples llamadas al Login si ya hay una en proceso}
                             //Llamada al login
                             callLogin(context, userController.text, paswordController.text).then((tuple) {
                               int login = tuple.item1;
@@ -98,16 +101,12 @@ class _LoginState extends State<Login>{
                         }, 
                         child: Text("Entrar")
                       ),
-                      //Imagen de carga
-                      if(cargando)
-                        Positioned(
-                          bottom: 10,
-                          left: size.width * 0.5 - 30,
-                          child: const _loading(),
-                        ),
                     ],
                   )
                 ),
+                //Imagen de carga
+                if(context.read<loginProvider>().obtener_cargando())
+                  const _loading(),
               ],
             ),
           ),
@@ -120,8 +119,9 @@ class _LoginState extends State<Login>{
   Future<Tuple2<int, String>> callLogin(BuildContext context, String usr, String pwd) async {
   
     
-    cargando = true;
-    setState(() {});
+    //cargando = true;
+    context.read<loginProvider>().cambiar_cargando(true);
+    //setState(() {});
     //await Future.delayed(const Duration(seconds: 5));
     
     final response = await http.post(
@@ -134,11 +134,10 @@ class _LoginState extends State<Login>{
       },
     );
 
-    cargando = false;
-    setState(() {});
-    
+    //cargando = false;
+    context.read<loginProvider>().cambiar_cargando(false);
+    setState(() {});                                        //Es necesario para que elimine la animacion de cargando
     var jsonResponse = json.decode(response.body);
-    //print("jsonResponse: $jsonResponse");
     
     //Verificacion de la respuesta del servidor
     if (response.statusCode == 200) {
@@ -148,7 +147,8 @@ class _LoginState extends State<Login>{
       }
 
       if(jsonResponse.containsKey('OK')){
-        idSesion=jsonResponse["JSESSIONID"]; //Obtencion del Id de la sesion 
+        //idSesion=jsonResponse["JSESSIONID"]; //Obtencion del Id de la sesion 
+        context.read<loginProvider>().establece_idSesion(jsonResponse["JSESSIONID"]);
         return Tuple2(1, "OK");
       }
       
@@ -166,15 +166,18 @@ class _loading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      width: 60,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        shape: BoxShape.circle
-      ),
-      child: const CircularProgressIndicator(
-        color: Colors.blue,
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 10),
+      child: Container(
+        height: 60,
+        width: 60,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0),
+          shape: BoxShape.circle
+        ),
+        child: const CircularProgressIndicator(
+          color: Colors.blue,
+        ),
       ),
     );
   }

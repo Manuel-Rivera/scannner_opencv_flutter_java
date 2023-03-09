@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:xml/xml.dart';
 
 import '../../Providers/document_provider.dart';
+import '../../Providers/login_provider.dart';
 import '../scanner_screen/drawer.dart';
 import '../scanner_screen/new_image.dart';
 import '../scanner_screen/pdf_screen.dart';
@@ -290,8 +291,7 @@ Future<String> numeroArchivo() async {
   request.fields['cuso'] = 'comun.cntArchis';
   
   // Set the session ID as a cookie in the request headers
-  request.headers['cookie'] = 'JSESSIONID=$idSesion';
-  
+  request.headers['cookie'] = 'JSESSIONID='+context.read<loginProvider>().obtener_idSesion();
   // Send the request and get the response
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
@@ -329,8 +329,7 @@ Future<void> sendFile(String path) async {
   request.fields['coments'] = 'Desde flutter';
 
   // Set the session ID as a cookie in the request headers
-  request.headers['cookie'] = 'JSESSIONID=$idSesion';
-
+  request.headers['cookie'] = 'JSESSIONID='+context.read<loginProvider>().obtener_idSesion();
 
   // Send the request and get the response
   var response = await request.send();
