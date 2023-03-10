@@ -124,4 +124,11 @@ class DocumentProvider extends ChangeNotifier {
       notifyListeners();
     });
   }
+
+
+  void cambiarEnviando(int index, bool enviando){
+    allDocuments[index].enviando = enviando;
+    notifyListeners();
+  }
+
 }

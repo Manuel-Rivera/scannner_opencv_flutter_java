@@ -1,18 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:http/http.dart' as http;
-import '../../Providers/login_provider.dart';
-import 'dart:convert';
-
 
 import '../../ui/input_decorations.dart';
 import '../../widgets/widgets.dart';
 import '../home_screen/home_.dart';
-
+import '../../Providers/login_provider.dart';
 
 //String idSesion ="";
-
 
 class Login extends StatefulWidget {
   Login({super.key});
@@ -104,9 +102,16 @@ class _LoginState extends State<Login>{
                     ],
                   )
                 ),
-                //Imagen de carga
-                if(context.read<loginProvider>().obtener_cargando())
-                  const _loading(),
+                //Construye la animacion de cargando (O no) cuando sea necesario
+                Consumer<loginProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.obtener_cargando()) {  //Si esta cargando
+                      return loading();          //Retorna animacion de cargando
+                    } else {  
+                      return SizedBox.shrink();
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -117,10 +122,9 @@ class _LoginState extends State<Login>{
 
   //Post al login del servlet
   Future<Tuple2<int, String>> callLogin(BuildContext context, String usr, String pwd) async {
-  
-    
     //cargando = true;
-    context.read<loginProvider>().cambiar_cargando(true);
+    //context.read<loginProvider>().cambiar_cargando(true);
+    Provider.of<loginProvider>(context, listen: false).cambiar_cargando(true);
     //setState(() {});
     //await Future.delayed(const Duration(seconds: 5));
     
@@ -135,8 +139,9 @@ class _LoginState extends State<Login>{
     );
 
     //cargando = false;
-    context.read<loginProvider>().cambiar_cargando(false);
-    setState(() {});                                        //Es necesario para que elimine la animacion de cargando
+    //context.read<loginProvider>().cambiar_cargando(false);
+    Provider.of<loginProvider>(context, listen: false).cambiar_cargando(false);
+    //setState(() {});                                        //Es necesario para que elimine la animacion de cargando
     var jsonResponse = json.decode(response.body);
     
     //Verificacion de la respuesta del servidor
@@ -158,53 +163,6 @@ class _LoginState extends State<Login>{
 
 }
 
-
-class _loading extends StatelessWidget {
-  const _loading({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10),
-      child: Container(
-        height: 60,
-        width: 60,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0),
-          shape: BoxShape.circle
-        ),
-        child: const CircularProgressIndicator(
-          color: Colors.blue,
-        ),
-      ),
-    );
-  }
-}
-
-
-
-
-void muestraAlerta(BuildContext context, String mensaje){
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Error'),
-        content: Text(mensaje),
-        actions: <Widget>[
-          TextButton(
-            child: Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
 
 
 

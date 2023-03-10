@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 //import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
@@ -7,10 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 import 'package:xml/xml.dart';
 
 import '../../Providers/document_provider.dart';
 import '../../Providers/login_provider.dart';
+import '../../widgets/widgets.dart';
 import '../scanner_screen/drawer.dart';
 import '../scanner_screen/new_image.dart';
 import '../scanner_screen/pdf_screen.dart';
@@ -236,7 +239,13 @@ class _HomeState extends State<Home> {
                               ),
                               onPressed: () {
                                 var documentPath = Provider.of<DocumentProvider>(context, listen: false).allDocuments[index].pdfPath;
-                                sendFile(documentPath);
+                                Provider.of<DocumentProvider>(context, listen: false).cambiarEnviando(index,true);
+                                sendFile(documentPath).then((tuple) {
+                                  //int arriva = tuple.item1;
+                                  String mensaje = tuple.item2;
+                                  Provider.of<DocumentProvider>(context, listen: false).cambiarEnviando(index,false);
+                                  alertaDocumentoSubido(context,mensaje);
+                                });
                               },
                             ),
                             IconButton(
@@ -267,10 +276,20 @@ class _HomeState extends State<Home> {
                                               listen: false)
                                           .allDocuments[index]
                                           .pdfPath);
-                                })
+                                }),
                           ],
                         ),
-                      )
+                      ),
+                      //Construye la animacion de cargando (O no) cuando sea necesario
+                      Consumer<DocumentProvider>(
+                        builder: (context, provider, child) {
+                          if (provider.allDocuments[index].enviando) {  //Si esta cargando
+                            return loading();          //Retorna animacion de cargando
+                          } else {  
+                            return SizedBox.shrink();
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ],
@@ -280,6 +299,7 @@ class _HomeState extends State<Home> {
         ));
   }
 
+//Envia una peticion para obtener el nombre del archivo a subir (numero consecutivo)
 Future<String> numeroArchivo() async {
   var request = http.MultipartRequest(
     'POST',
@@ -304,7 +324,7 @@ Future<String> numeroArchivo() async {
 }
 
 
-Future<void> sendFile(String path) async {
+ Future <Tuple2<int, String>> sendFile(String path) async {
   var request = http.MultipartRequest(
     'POST',
     Uri.parse('http://192.168.56.1:8080/siia/carPDF2'),
@@ -334,8 +354,18 @@ Future<void> sendFile(String path) async {
   // Send the request and get the response
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
-  print(responseBody);
+  var jsonResponse = json.decode(responseBody);
+  print(jsonResponse);
 
+  if (response.statusCode == 200) {
+    if(jsonResponse.containsKey('ERROR')){
+        return Tuple2(0, jsonResponse["ERROR"]);
+      }
+      if(jsonResponse.containsKey('OK')){
+        return Tuple2(1, "OK");
+      }
+  }
+  return Tuple2(0, response.statusCode.toString());
 }
 
 /*

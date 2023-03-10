@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 class loginProvider extends ChangeNotifier {
   String _idSesion = "";
   bool _cargando = false;
+  bool _cargandoEnvio = false;
 
   void establece_idSesion(String idSesion){
     _idSesion = idSesion;
