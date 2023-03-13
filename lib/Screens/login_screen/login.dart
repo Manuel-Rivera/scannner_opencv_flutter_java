@@ -153,7 +153,7 @@ class _LoginState extends State<Login>{
 
       if(jsonResponse.containsKey('OK')){
         //idSesion=jsonResponse["JSESSIONID"]; //Obtencion del Id de la sesion 
-        context.read<loginProvider>().establece_idSesion(jsonResponse["JSESSIONID"]);
+        context.read<loginProvider>().establece_idSesion(jsonResponse["JSESSIONID"],jsonResponse["USR"]);
         return Tuple2(1, "OK");
       }
       

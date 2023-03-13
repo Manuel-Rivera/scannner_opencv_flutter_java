@@ -237,15 +237,21 @@ class _HomeState extends State<Home> {
                                 Icons.send_and_archive,
                                 color: ThemeData.dark().colorScheme.secondary,
                               ),
-                              onPressed: () {
-                                var documentPath = Provider.of<DocumentProvider>(context, listen: false).allDocuments[index].pdfPath;
-                                Provider.of<DocumentProvider>(context, listen: false).cambiarEnviando(index,true);
-                                sendFile(documentPath).then((tuple) {
-                                  //int arriva = tuple.item1;
-                                  String mensaje = tuple.item2;
-                                  Provider.of<DocumentProvider>(context, listen: false).cambiarEnviando(index,false);
-                                  alertaDocumentoSubido(context,mensaje);
-                                });
+                              onPressed: () async {
+                                String? result = await formularioEnvio(context);
+                                if(result != null && result.compareTo("cancel") != 0){
+                                  //Evita el envio multiple del mismo archivo si ya esta enviandose 
+                                  if (!Provider.of<DocumentProvider>(context, listen: false).allDocuments[index].enviando){ 
+                                    var documentPath = Provider.of<DocumentProvider>(context, listen: false).allDocuments[index].pdfPath;
+                                    Provider.of<DocumentProvider>(context, listen: false).cambiarEnviando(index,true);
+                                    sendFile(documentPath).then((tuple) {
+                                      //int arriva = tuple.item1;
+                                      String mensaje = tuple.item2;
+                                      Provider.of<DocumentProvider>(context, listen: false).cambiarEnviando(index,false);
+                                      alertaDocumentoSubido(context,mensaje);
+                                    });
+                                  }
+                                }
                               },
                             ),
                             IconButton(
@@ -343,10 +349,22 @@ Future<String> numeroArchivo() async {
   String numero = await numeroArchivo();
 
   // Add other parameters to the request
-  request.fields['num'] = numero;
-  request.fields['dir'] = 'archivos';
-  request.fields['id'] = numero;
-  request.fields['coments'] = 'Desde flutter';
+  request.fields['usr'] = context.read<loginProvider>().obtener_usuario();
+  request.fields['num'] = numero;             //Numero de la secuencia que le corresponde al archivo
+  request.fields['dir'] = 'archivos';         //Directorio donde se guardara el arhivo
+  request.fields['id'] = numero;              //Id del archivo
+  request.fields['coments'] = 'Desde flutter';//Comentarios 
+  request.fields['arch_alumno'] = '0617386J'; //Matricula del alumno que le corresponde el archivo
+  request.fields['arch_nombre'] = 'NOMBRE';   //Nombre real del archivo
+  request.fields['arch_ctype'] = 'PDF';       //Tipo de archivo
+  request.fields['arch_size'] = '345684';     //Tamaño del archivo
+  request.fields['arch_tdoc'] = '115';        //Tipo de documento
+  request.fields['arch_boveda'] = '1';        //Identificador en la boveda
+  request.fields['arch_wid'] = '';            //Identificador ascendente para el siia web           (OPCIONAL)
+  request.fields['arch_warchid'] = '';        //Identificador archivo siia web                      (OPCIONAL)     
+  request.fields['arch_comen'] = '';          //Comentarios                                         (OPCIONAL)     
+
+  
 
   // Set the session ID as a cookie in the request headers
   request.headers['cookie'] = 'JSESSIONID='+context.read<loginProvider>().obtener_idSesion();
@@ -355,6 +373,7 @@ Future<String> numeroArchivo() async {
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
   var jsonResponse = json.decode(responseBody);
+  print(context.read<loginProvider>().obtener_usuario());
   print(jsonResponse);
 
   if (response.statusCode == 200) {
