@@ -60,4 +60,5 @@ flutter {
 }
 dependencies{
     implementation project(':opencv')
+    implementation("androidx.exifinterface:exifinterface:1.3.6")
 }

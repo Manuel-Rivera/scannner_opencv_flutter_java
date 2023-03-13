@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 
 import androidx.annotation.NonNull;
+import androidx.exifinterface.media.ExifInterface;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -19,8 +20,10 @@ import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -36,7 +39,76 @@ public class MainActivity extends FlutterActivity {
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(),"opencv").setMethodCallHandler((call, result) -> {
+            if (call.method.equals("convertToGray")){
+                System.out.println("convertToGray");
+                byte[] imageBytes=call.argument("imageBytes");
+                //!READ IMAGE
+                Bitmap bitmap= BitmapFactory.decodeByteArray(imageBytes,0,imageBytes.length);
 
+                //Se ajusta imagen acorde a su orientación
+                int orientation;
+                try {
+                    ExifInterface exif = new ExifInterface(new ByteArrayInputStream(imageBytes));
+                    orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                int angle=getRotationAngle(orientation);
+                Matrix matrix=new Matrix();
+                matrix.postRotate(angle);
+                bitmap =Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),matrix,true);
+
+
+                //!GET WIDTH AND HEIGHT TO IMAGE
+                int width=bitmap.getWidth();
+                int height=bitmap.getHeight();
+                //!GET POINTS OF CROP IMAGE
+                double tl_x=call.argument("tl_x");
+                double tl_y=call.argument("tl_y");
+                double tr_x=call.argument("tr_x");
+                double tr_y=call.argument("tr_y");
+                double bl_x=call.argument("bl_x");
+                double bl_y=call.argument("bl_y");
+                double br_x=call.argument("br_x");
+                double br_y=call.argument("br_y");
+
+                if(OpenCVLoader.initDebug()) {
+                    Mat mat=new Mat();
+                Utils.bitmapToMat(bitmap,mat);
+                Imgproc.cvtColor(mat,mat,Imgproc.COLOR_BGR2GRAY);
+                Imgproc.GaussianBlur(mat,mat,new Size(5,5),0);
+                Mat src_mat=new Mat(4,1, CvType.CV_32FC2);
+                Mat dst_mat=new Mat(4,1,CvType.CV_32FC2);
+
+
+                src_mat.put(0,0,tl_x,tl_y,tr_x,tr_y,bl_x,bl_y,br_x,br_y);
+                dst_mat.put(0,0,0.0,0.0,width,0.0, 0.0,height,width,height);
+                Mat perspectiveTransform=Imgproc.getPerspectiveTransform(src_mat, dst_mat);
+
+                Imgproc.warpPerspective(mat, mat, perspectiveTransform, new Size(width,height));
+
+                Imgproc.adaptiveThreshold(mat,mat,255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY,401,14);
+
+                Mat blurred=new Mat();
+                Imgproc.GaussianBlur(mat,blurred,new Size(5,5),0);
+                Mat result1=new Mat();
+                Core.addWeighted(blurred,0.5,mat,0.5,1,result1);
+
+
+                Utils.matToBitmap(result1,bitmap);
+
+                //!RESCALE IMAGE
+                bitmap=Bitmap.createScaledBitmap(bitmap,2480,3508,true);
+
+
+                //!PREPARING BITMAP TO SEND IN BYTEARRAY ON FORMAT JPGE
+                ByteArrayOutputStream stream=new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+                byte[] byteArray=stream.toByteArray();
+                result.success(byteArray);
+                }
+            }
+            /*
             if(call.method.equals("convertToGray")){
                 System.out.println("convertToGray");
                 Bitmap bitmap= BitmapFactory.decodeFile(call.argument("filePath").toString());
@@ -80,7 +152,7 @@ public class MainActivity extends FlutterActivity {
                     result.success(byteArray);
 
                 }
-            }
+            }*/
             if(call.method.equals("original")){
                 Bitmap bitmap= BitmapFactory.decodeFile(call.argument("filePath").toString());
                 int height=bitmap.getHeight();
@@ -149,6 +221,25 @@ public class MainActivity extends FlutterActivity {
             }
         });
     }
+
+    private int getRotationAngle(int orientation) {
+        int angle;
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                angle = 90;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                angle = 180;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                angle = 270;
+                break;
+            default:
+                angle = 0;
+        }
+        return angle;
+    }
+
     class RotateThread extends  Thread{
 
         RotateThread(byte[] bytes){

@@ -1,0 +1,91 @@
+ejemplo animatedListKey.currentState?.removeItem animatedlist flutter con provider y consummer
+¡Claro! Aquí tienes un ejemplo completo de cómo usar AnimatedList en Flutter con el método animatedListKey.currentState?.removeItem() y Provider para borrar elementos de una lista.
+
+En este ejemplo, tenemos una lista de notas y queremos permitir al usuario borrar notas de la lista. Primero, creamos una clase Note para representar una nota y un ChangeNotifier para mantener la lista de notas. Luego, definimos un AnimatedList que muestra las notas y un botón que permite al usuario agregar nuevas notas. Finalmente, definimos una función _removeNote que elimina una nota de la lista y llama a animatedListKey.currentState?.removeItem para eliminar la entrada correspondiente del AnimatedList.
+
+dart
+Copy code
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class Note {
+  final String text;
+  Note(this.text);
+}
+
+class NoteList extends ChangeNotifier {
+  final List<Note> _notes = [
+    Note('Note 1'),
+    Note('Note 2'),
+    Note('Note 3'),
+  ];
+
+  List<Note> get notes => _notes;
+
+  void add(Note note) {
+    _notes.add(note);
+    notifyListeners();
+  }
+
+  void remove(Note note) {
+    final index = _notes.indexOf(note);
+    if (index >= 0) {
+      _notes.removeAt(index);
+      notifyListeners();
+    }
+  }
+}
+
+class NoteListScreen extends StatelessWidget {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
+  void _removeNote(
+      BuildContext context, Note note, NoteList noteList, Animation<double> animation) {
+    noteList.remove(note);
+    _listKey.currentState?.removeItem(
+      noteList.notes.indexOf(note),
+      (context, animation) => _noteCard(context, note, animation),
+    );
+  }
+
+  Widget _noteCard(BuildContext context, Note note, Animation<double> animation) {
+    final noteList = Provider.of<NoteList>(context, listen: false);
+    return SizeTransition(
+      sizeFactor: animation,
+      child: Card(
+        child: ListTile(
+          title: Text(note.text),
+          trailing: IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () => _removeNote(context, note, noteList, animation),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final noteList = Provider.of<NoteList>(context);
+    return Scaffold(
+      appBar: AppBar(title: Text('Note List')),
+      body: AnimatedList(
+        key: _listKey,
+        initialItemCount: noteList.notes.length,
+        itemBuilder: (context, index, animation) {
+          final note = noteList.notes[index];
+          return _noteCard(context, note, animation);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          final noteList = Provider.of<NoteList>(context, listen: false);
+          noteList.add(Note('New Note'));
+          _listKey.currentState?.insertItem(noteList.notes.length - 1);
+        },
+      ),
+    );
+  }
+}
+En este ejemplo, usamos SizeTransition para animar la eliminación de una nota de la lista. La función _removeNote elimina la nota de la lista y llama a animatedListKey.currentState?.removeItem para eliminar la entrada correspondiente del AnimatedList. La función _noteCard crea un widget Card que muestra la nota y un botón para eliminarla. Usamos Provider para obtener la lista de notas y para agregar nuevas notas. Cuando se agrega

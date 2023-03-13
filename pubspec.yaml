@@ -47,6 +47,7 @@ dependencies:
   printing:
   back_button_interceptor:
   sqflite:
+  flutter_exif_rotation: ^0.5.1
 
 dev_dependencies:
   flutter_test:

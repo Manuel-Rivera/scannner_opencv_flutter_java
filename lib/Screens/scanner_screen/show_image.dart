@@ -4,32 +4,31 @@ import 'dart:io';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart';
 import 'package:provider/provider.dart';
 
 import '../../Providers/document_provider.dart';
-import 'crop_image.dart';
+import 'new_image.dart';
 
-// ignore: must_be_immutable
 class ShowImage extends StatefulWidget {
   final File file;
   final Offset tl, tr, bl, br;
   final double height, width;
-  final GlobalKey<AnimatedListState> animatedListKey;
-  late Size imagePixel;
+  final Size imagePixel;
+  final Uint8List imagebytes;
 
-  ShowImage(
-      {super.key,
-      required this.file,
-      required this.bl,
-      required this.br,
-      required this.tl,
-      required this.tr,
-      required this.height,
-      required this.width,
-      required this.imagePixel,
-      required this.animatedListKey});
+  const ShowImage({
+    super.key,
+    required this.imagebytes,
+    required this.bl,
+    required this.br,
+    required this.tl,
+    required this.tr,
+    required this.height,
+    required this.width,
+    required this.imagePixel,
+    required this.file,
+  });
 
   @override
   State<ShowImage> createState() => _ShowImageState();
@@ -73,28 +72,23 @@ class _ShowImageState extends State<ShowImage> {
       }
     });
 
-    tlX = (widget.imagePixel.width / widget.width) * widget.tl.dx;
-    trX = (widget.imagePixel.width / widget.width) * widget.tr.dx;
-    blX = (widget.imagePixel.width / widget.width) * widget.bl.dx;
-    brX = (widget.imagePixel.width / widget.width) * widget.br.dx;
+    tlX = (widget.imagePixel.width.toDouble() / widget.width.toDouble()) *
+        widget.tl.dx.toDouble();
+    trX = (widget.imagePixel.width.toDouble() / widget.width.toDouble()) *
+        widget.tr.dx.toDouble();
+    blX = (widget.imagePixel.width.toDouble() / widget.width.toDouble()) *
+        widget.bl.dx.toDouble();
+    brX = (widget.imagePixel.width.toDouble() / widget.width.toDouble()) *
+        widget.br.dx.toDouble();
 
-    tlY = (widget.imagePixel.height / widget.height) * widget.tl.dy;
-    trY = (widget.imagePixel.height / widget.height) * widget.tr.dy;
-    blY = (widget.imagePixel.height / widget.height) * widget.bl.dy;
-    brY = (widget.imagePixel.height / widget.height) * widget.br.dy;
-
-    // ignore: avoid_print
-    print("ddd");
-    // ignore: avoid_print
-    print(tlX);
-    // ignore: avoid_print
-    print(trX);
-    // ignore: avoid_print
-    print(blY);
-    // ignore: avoid_print
-    print(brY);
-    // ignore: avoid_print
-    print("ff");
+    tlY = (widget.imagePixel.height.toDouble() / widget.height.toDouble()) *
+        widget.tl.dy.toDouble();
+    trY = (widget.imagePixel.height.toDouble() / widget.height.toDouble()) *
+        widget.tr.dy.toDouble();
+    blY = (widget.imagePixel.height.toDouble() / widget.height.toDouble()) *
+        widget.bl.dy.toDouble();
+    brY = (widget.imagePixel.height.toDouble() / widget.height.toDouble()) *
+        widget.br.dy.toDouble();
 
     convertToGray();
     BackButtonInterceptor.add(myInterceptor);
@@ -114,12 +108,12 @@ class _ShowImageState extends State<ShowImage> {
                 mainAxisSize: MainAxisSize.min,
                 children: const [
                   Text(
-                    "Discart this scan",
+                    "Descartar scanner",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Divider(thickness: 2),
                   Text(
-                    "This will discart the scans you have captured. Are you sure",
+                    "Se desacartara el escanner capturado, ¿estas seguro?",
                     style: TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -154,6 +148,7 @@ class _ShowImageState extends State<ShowImage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              //bytes == null ? Container() : Image.memory(bytes),
               Card(
                 color: Colors.black,
                 child: Column(
@@ -161,35 +156,49 @@ class _ShowImageState extends State<ShowImage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        //!EXIT
                         IconButton(
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
                             icon: const Icon(Icons.clear, color: Colors.white)),
-                        TextButton(
-                            onPressed: () async {
-                              //TODO:SAVE HAS PDF
-                              Navigator.of(context).pop();
-                              await widget.file
-                                  .writeAsBytes(bytes)
-                                  .then((_) async {
-                                ImageSizeGetter.getSize(FileInput(widget.file));
-                                Provider.of<DocumentProvider>(context,
-                                        listen: false)
-                                    .saveDocument(
+                        //!SAVE PDF
+                        Consumer<ImagesProvider>(
+                          builder: (context, docProvider, child) {
+                            return TextButton(
+                                onPressed: () async {
+                                  await widget.file
+                                      .writeAsBytes(bytes)
+                                      .then((_) {
+                                    //ImageSizeGetter.getSize(
+                                    //    FileInput(widget.file));
+                                    //!REGRESAR A LA PANTALLA ANTERIOR
+                                    Navigator.of(context).pop();
+                                    //!ADD IMAGE, BEFORE CONVERT TO DOCUMENT
+                                    docProvider.addImage(
                                         name: nameController.text,
                                         documentPath: widget.file.path,
                                         dateTime: DateTime.now(),
                                         shareLink: "",
-                                        animatedListKey: widget.animatedListKey,
                                         angle: angle);
-                              });
-                            },
-                            child: const Text("save has pdf"))
+
+                                    //!ADD ITEM TO ANIMATEDLIST
+                                    Provider.of<GlobalKeyStore>(context,
+                                            listen: false)
+                                        .animatedListKey
+                                        .currentState
+                                        ?.insertItem(
+                                            docProvider.listDocuments.length -
+                                                1);
+                                  });
+                                },
+                                child: const Text("Guardar PDF"));
+                          },
+                        )
                       ],
                     ),
                     Container(
-                      width: 150,
+                      margin: const EdgeInsets.only(left: 20.0, right: 20.0),
                       padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -269,9 +278,9 @@ class _ShowImageState extends State<ShowImage> {
               Navigator.of(context).pop();
             }
             Navigator.of(context)
-                .push(
+                .pushReplacement(
               MaterialPageRoute(
-                builder: (context) => CropImage(widget.file),
+                builder: (context) => NewImage(widget.file),
               ),
             )
                 .then((value) {
@@ -335,7 +344,6 @@ class _ShowImageState extends State<ShowImage> {
 
   Widget colorBottomsheet() {
     if (isOriginalBytes == false) {
-      //TODO:GRAYandoriginal
       grayandoriginal();
     }
     return SizedBox(
@@ -498,9 +506,11 @@ class _ShowImageState extends State<ShowImage> {
     );
   }
 
-  Future<dynamic> convertToGray() async {
-    var bytesArray = await channel.invokeMethod('convertToGray', {
-      'filePath': widget.file.path,
+  Future<void> convertToGray() async {
+    Uint8List bytesArray;
+    bytesArray = await channel.invokeMethod('convertToGray', {
+      "imagePath": widget.file.path,
+      "imageBytes": widget.imagebytes,
       'tl_x': tlX,
       'tl_y': tlY,
       'tr_x': trX,
@@ -510,13 +520,11 @@ class _ShowImageState extends State<ShowImage> {
       'br_x': brX,
       'br_y': brY,
     });
+
     setState(() {
-      // ignore: avoid_print
-      //print(bytesArray);
       bytes = bytesArray;
       whiteboardBytes = bytesArray;
     });
-    return bytesArray;
   }
 
   Future<void> grayandoriginal() async {
@@ -555,7 +563,8 @@ class _ShowImageState extends State<ShowImage> {
         'br_y': brY,
       });
     });
-    Timer(const Duration(seconds: 7), () {
+
+    Timer(const Duration(seconds: 3), () {
       // ignore: avoid_print
       print("this started");
       channel.invokeMethod('grayCompleted').then((value) {
