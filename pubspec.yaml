@@ -50,6 +50,7 @@ dependencies:
   back_button_interceptor:
   sqflite:
   tuple: ^2.0.1
+  flutter_exif_rotation: ^0.5.1
 
 dev_dependencies:
   flutter_test:

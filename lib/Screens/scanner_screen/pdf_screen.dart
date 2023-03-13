@@ -1,26 +1,19 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_full_pdf_viewer/full_pdf_viewer_scaffold.dart';
-import 'package:flutter_share/flutter_share.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
 import '../../Model/docuement_model.dart';
 import '../../Providers/document_provider.dart';
 
-// ignore: must_be_immutable
 class PDFScreen extends StatefulWidget {
-  late DocumentModel document;
-  late GlobalKey<AnimatedListState> animatedListKey;
+  final DocumentModel document;
 
-  PDFScreen(
-      {super.key,
-      required this.document,
-      required GlobalKey<AnimatedListState> animatedListKey});
+  const PDFScreen({super.key, required this.document});
 
   @override
   State<PDFScreen> createState() => _PDFScreenState();
@@ -46,8 +39,9 @@ class _PDFScreenState extends State<PDFScreen> {
                   IconButton(
                     icon: const Icon(Icons.share),
                     onPressed: () async {
+                      /*
                       await FlutterShare.shareFile(
-                          title: "pdf", filePath: widget.document.pdfPath);
+                          title: "pdf", filePath: widget.document.pdfPath);*/
                     },
                   ),
                   IconButton(
@@ -123,8 +117,8 @@ class _PDFScreenState extends State<PDFScreen> {
               onTap: () {
                 late int docIndex;
                 List<DocumentModel> documents =
-                    Provider.of<DocumentProvider>(context, listen: false)
-                        .allDocuments;
+                    Provider.of<ImagesProvider>(context, listen: false)
+                        .listDocuments;
                 for (int index = 0; index < documents.length; index++) {
                   if (document.dateTime == documents[index].dateTime) {
                     docIndex = index;
@@ -151,8 +145,8 @@ class _PDFScreenState extends State<PDFScreen> {
               onTap: () {
                 late int docIndex;
                 List<DocumentModel> documents =
-                    Provider.of<DocumentProvider>(context, listen: false)
-                        .allDocuments;
+                    Provider.of<ImagesProvider>(context, listen: false)
+                        .listDocuments;
                 for (int index = 0; index < documents.length; index++) {
                   if (document.dateTime == documents[index].dateTime) {
                     docIndex = index;
@@ -202,15 +196,16 @@ class _PDFScreenState extends State<PDFScreen> {
               child: const Text("Cancel")),
           OutlinedButton(
               onPressed: () {
+                //!SE cambia el estado de animatedlist al realizar el cambio del nombre
+                Provider.of<GlobalKeyStore>(context, listen: false)
+                    .animatedListKey
+                    .currentState
+                    ?.setState(() {});
+                //!Se cambia el nombre del documento
+                Provider.of<ImagesProvider>(context, listen: false)
+                    .renameDocument(widget.document, controller.text);
+                //!Se regresa a la pagina anterior
                 Navigator.of(context).pop();
-                setState(() {
-                  widget.document.name = controller.text;
-                });
-                Provider.of<DocumentProvider>(context, listen: false)
-                    .renameDocument(
-                        index,
-                        dateTime.millisecondsSinceEpoch.toString(),
-                        controller.text);
               },
               child: const Text("Rename")),
         ],
@@ -228,14 +223,14 @@ class _PDFScreenState extends State<PDFScreen> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             const Text(
-              "Delete file",
+              "Eliminar archivo",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const Divider(
               thickness: 2,
             ),
             Text(
-              "Are you sure you want to delete this file?",
+              "¿Estas seguro de querer eliminar este archivo?",
               style: TextStyle(color: Colors.grey[500]),
             )
           ],
@@ -252,15 +247,7 @@ class _PDFScreenState extends State<PDFScreen> {
           ),
           OutlinedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-              Provider.of<DocumentProvider>(context, listen: false)
-                  .deleteDocument(
-                      index, dateTime.millisecondsSinceEpoch.toString());
-              Timer(const Duration(milliseconds: 300), () {
-                widget.animatedListKey.currentState?.removeItem(
-                    index, (context, animation) => const SizedBox());
-              });
+              _removeItem(context, widget.document);
             },
             child: const Text(
               "Delete",
@@ -270,6 +257,23 @@ class _PDFScreenState extends State<PDFScreen> {
         ],
       ),
     );
+  }
+
+  _removeItem(BuildContext context, DocumentModel document) {
+    //!SE INTACIA PROVIDER
+    final docProvider = Provider.of<ImagesProvider>(context, listen: false);
+    //!SE OBTIENE EL INDEX DEL ELEMENTO A ELIMINAR
+    final index = docProvider.listDocuments.indexOf(document);
+    //!SE ELIMINA ITEM DE ANIMATEDLIST
+    Provider.of<GlobalKeyStore>(context, listen: false)
+        .animatedListKey
+        .currentState
+        ?.removeItem(index, (context, animation) => const SizedBox());
+    //!SE ELIMINA ITEM DE LISTA DE DOCUMENTOS
+    docProvider.remove(document);
+    //!SE REGRESA A LA PANTALL ANTERIOR
+    Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
 
   @override

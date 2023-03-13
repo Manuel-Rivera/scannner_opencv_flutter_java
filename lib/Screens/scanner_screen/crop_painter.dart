@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
+//!CLASE USADA PARA PINTAR EL AREA DE RECORTE
 class CropPainter extends CustomPainter {
   late Offset tl, tr, bl, br;
   CropPainter(this.tl, this.tr, this.bl, this.br);
   Paint painter = Paint()
-    ..color = Colors.blue
+    ..color = Colors.yellowAccent
     ..strokeWidth = 2
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke;
   Paint painter1 = Paint()
-    ..color = Colors.blue
+    ..color = Colors.yellowAccent
     ..strokeWidth = 3
     ..strokeCap = StrokeCap.round;
   @override

@@ -8,25 +8,29 @@ import 'Screens/login_screen/login.dart';
 
 //Migración a provider
 void main() {
-  runApp(
-    MultiProvider(
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const AppState());
+}
+
+class AppState extends StatelessWidget {
+  const AppState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
       providers: [
-        /*
         ChangeNotifierProvider<ImagesProvider>(
-          create: ((_) => ImagesProvider()),
-          lazy: false,
-        ),*/
+            create: ((_) => ImagesProvider())),
+        ChangeNotifierProvider<GlobalKeyStore>(
+          create: ((_) => GlobalKeyStore()),
+        ),
         ChangeNotifierProvider<loginProvider>(
           create: ((_) => loginProvider()),
         ),
-        ChangeNotifierProvider<DocumentProvider>(
-          create: ((_) => DocumentProvider()),
-          lazy: false,
-        )
       ],
       child: const Scanner(),
-    ),
-  );
+    );
+  }
 }
 
 class Scanner extends StatelessWidget {
