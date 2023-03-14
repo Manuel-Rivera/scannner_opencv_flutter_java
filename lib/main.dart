@@ -47,7 +47,7 @@ class Scanner extends StatelessWidget {
           textSelectionTheme:
               const TextSelectionThemeData(selectionColor: Colors.blueGrey)),
       home: Login(),
-      initialRoute: 'home',
+      initialRoute: 'login',
       routes: Routes.getAppRoutes(),
       onGenerateRoute: (settings) => Routes.onGenerateRoute(settings),
     );

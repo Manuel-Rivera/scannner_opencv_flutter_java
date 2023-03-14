@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
 class DropdownButtonExample extends StatefulWidget {
-  const DropdownButtonExample({super.key});
+  //Definicion de una funcion callback
+  final Function(String) onSelectedValueChanged;  
+  //El constructor pide como argumento una funcion
+  //Esta funcion se llamara cuando haya un cambio en el valor seleccionado de DropdownButton
+  const DropdownButtonExample({Key? key, required this.onSelectedValueChanged})
+      : super(key: key);
 
   @override
   State<DropdownButtonExample> createState() => _DropdownButtonExampleState();
@@ -28,6 +33,8 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
         setState(() {
           dropdownValue = value!;
         });
+        //Llamada a la funcion callback pasandole como parametro el valor seleccionado
+        widget.onSelectedValueChanged(dropdownValue!); // Call the callback function with the selected value
       },
       items: list.map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(

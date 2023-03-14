@@ -14,6 +14,7 @@ import 'package:xml/xml.dart';
 
 
 import '../../Model/docuement_model.dart';
+import '../../Model/informacion_formulario.dart';
 import '../../Providers/document_provider.dart';
 import '../../Providers/login_provider.dart';
 import '../../widgets/widgets.dart';
@@ -209,14 +210,17 @@ class Home extends StatelessWidget {
                                 color: ThemeData.dark().colorScheme.secondary,
                               ),
                               onPressed: () async {
-                                String? result = await formularioEnvio(context);
-                                if(result != null && result.compareTo("cancel") != 0){
+                                informacionFormulario? result = await formularioEnvio(context);
+                                if(result != null && result.respuesta.compareTo("cancel") != 0){
+                                  print("************ result.respuesta: "+result.respuesta);
+                                  print("************ matricula: "+result.matricula);
+                                  print("************ tipoDocumento: "+result.tipoDocumento);
                                   //Evita el envio multiple del mismo archivo si ya esta enviandose 
                                   if (!enviando){ 
                                     enviando = true;
                                     setState(() {});
                                     var documentPath = document.pdfPath;        
-                                    sendFile(context,documentPath).then((tuple) {
+                                    sendFile(context,documentPath,result).then((tuple) {
                                       //int arriva = tuple.item1;
                                       String mensaje = tuple.item2;
                                       enviando = false;
@@ -491,7 +495,7 @@ class Home extends StatelessWidget {
   }
 
 
-  Future <Tuple2<int, String>> sendFile(BuildContext context, String path) async {
+  Future <Tuple2<int, String>> sendFile(BuildContext context, String path,informacionFormulario formInfo) async {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('http://192.168.56.1:8080/siia/carPDF2'),
@@ -508,22 +512,21 @@ class Home extends StatelessWidget {
 
     //Secuencia del archivo a subir
     String numero = await numeroArchivo(context);
-
     // Add other parameters to the request
     request.fields['usr'] = context.read<loginProvider>().obtener_usuario();
-    request.fields['num'] = numero;             //Numero de la secuencia que le corresponde al archivo
-    request.fields['dir'] = 'archivos';         //Directorio donde se guardara el arhivo
-    request.fields['id'] = numero;              //Id del archivo
-    request.fields['coments'] = 'Desde flutter';//Comentarios 
-    request.fields['arch_alumno'] = '0617386J'; //Matricula del alumno que le corresponde el archivo
-    request.fields['arch_nombre'] = 'NOMBRE';   //Nombre real del archivo
-    request.fields['arch_ctype'] = 'PDF';       //Tipo de archivo
-    request.fields['arch_size'] = '345684';     //Tamaño del archivo
-    request.fields['arch_tdoc'] = '115';        //Tipo de documento
-    request.fields['arch_boveda'] = '1';        //Identificador en la boveda
-    request.fields['arch_wid'] = '';            //Identificador ascendente para el siia web           (OPCIONAL)
-    request.fields['arch_warchid'] = '';        //Identificador archivo siia web                      (OPCIONAL)     
-    request.fields['arch_comen'] = '';          //Comentarios                                         (OPCIONAL)     
+    request.fields['num'] = numero;                     //Numero de la secuencia que le corresponde al archivo
+    request.fields['dir'] = 'archivos';                 //Directorio donde se guardara el arhivo
+    request.fields['id'] = numero;                      //Id del archivo
+    request.fields['coments'] = 'Desde flutter';        //Comentarios 
+    request.fields['arch_alumno'] = formInfo.matricula; //Matricula del alumno que le corresponde el archivo
+    request.fields['arch_nombre'] = 'NOMBRE';           //Nombre real del archivo
+    request.fields['arch_ctype'] = 'PDF';               //Tipo de archivo
+    request.fields['arch_size'] = '345684';             //Tamaño del archivo
+    request.fields['arch_tdoc'] = '115';                //Tipo de documento
+    request.fields['arch_boveda'] = '1';                //Identificador en la boveda
+    request.fields['arch_wid'] = '';                    //Identificador ascendente para el siia web           (OPCIONAL)
+    request.fields['arch_warchid'] = '';                //Identificador archivo siia web                      (OPCIONAL)     
+    request.fields['arch_comen'] = '';                  //Comentarios                                         (OPCIONAL)     
 
     
 
