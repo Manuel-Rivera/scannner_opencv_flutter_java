@@ -141,11 +141,4 @@ class ImagesProvider extends ChangeNotifier {
           document.dateTime.millisecondsSinceEpoch.toString(), jsonDocument);
     });
   }
-
-
-  void cambiarEnviando(int index, bool enviando){
-    listDocuments[index].enviando = enviando;
-    notifyListeners();
-  }
-
 }

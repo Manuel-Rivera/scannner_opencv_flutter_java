@@ -4,7 +4,6 @@ class DocumentModel {
   String documentPath;
   DateTime dateTime;
   String pdfPath;
-  bool enviando = false;
   DocumentModel(
       {required this.name,
       this.shareLink = "",

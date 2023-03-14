@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'Providers/document_provider.dart';
-import 'Providers/login_provider.dart';
 import 'Routes/routes.dart';
 import 'Screens/login_screen/login.dart';
+import 'Providers/login_provider.dart';
 
 //Migración a provider
 void main() {
@@ -47,7 +47,7 @@ class Scanner extends StatelessWidget {
           textSelectionTheme:
               const TextSelectionThemeData(selectionColor: Colors.blueGrey)),
       home: Login(),
-      initialRoute: 'login',
+      initialRoute: 'home',
       routes: Routes.getAppRoutes(),
       onGenerateRoute: (settings) => Routes.onGenerateRoute(settings),
     );
