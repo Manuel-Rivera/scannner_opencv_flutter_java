@@ -1,5 +1,19 @@
 import 'package:flutter/material.dart';
 
+List<DropdownMenuItem<String>> get dropdownItems{
+  List<DropdownMenuItem<String>> menuItems = [
+    DropdownMenuItem(child: Text("CERTIFICACION DE FIRMAS"),value: "0"),
+    DropdownMenuItem(child: Text("ACTA DE NACIMIENTO"),value: "1"),
+    DropdownMenuItem(child: Text("ERTIFICADO GLOBAL DE ESTUDIOS"),value: "10"),
+    DropdownMenuItem(child: Text("TITULO DE MAESTRIA 2"),value: "100"),
+    DropdownMenuItem(child: Text("CONSTANCIA DE TERM. DE LIC."),value: "101"),
+    DropdownMenuItem(child: Text("CONSTANCIA DE TERM. DE ESP."),value: "102"),
+    DropdownMenuItem(child: Text("TCONSTANCIA DE TERM. DE MAEST."),value: "103"),
+  ];
+  return menuItems;
+}
+
+
 const List<String> list = <String>['CERTIFICACION DE FIRMAS',
 'ACTA DE NACIMIENTO',
 'CERTIFICADO GLOBAL DE ESTUDIOS',
@@ -7,6 +21,8 @@ const List<String> list = <String>['CERTIFICACION DE FIRMAS',
 'CONSTANCIA DE TERM. DE LIC.',
 'CONSTANCIA DE TERM. DE ESP.',
 'CONSTANCIA DE TERM. DE MAEST.'];
+
+
 
 class DropdownButtonExample extends StatefulWidget {
   //Definicion de una funcion callback
@@ -43,12 +59,7 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
         //Llamada a la funcion callback pasandole como parametro el valor seleccionado
         widget.onSelectedValueChanged(dropdownValue!); // Call the callback function with the selected value
       },
-      items: list.map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
+      items: dropdownItems,
     );
   }
 }

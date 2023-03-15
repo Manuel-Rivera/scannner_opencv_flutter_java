@@ -93,7 +93,7 @@ Future<informacionFormulario?> formularioEnvio(BuildContext context) async {
             onPressed: (){ 
               informacionFormulario formInfo = informacionFormulario(
                 matricula: matriculaController.text, 
-                tipoDocumentoPersonal: 10, 
+                tipoDocumentoPersonal: selectedValue, 
                 respuesta: 'cancel',
                 tipoDocumento: selectedValue,
                 comentarios:comentariosController.text);
@@ -113,7 +113,7 @@ Future<informacionFormulario?> formularioEnvio(BuildContext context) async {
               //Envio de archivos
               informacionFormulario formInfo = informacionFormulario(
                 matricula: matriculaController.text, 
-                tipoDocumentoPersonal: 10, 
+                tipoDocumentoPersonal: selectedValue, 
                 respuesta: 'OK', 
                 tipoDocumento: selectedValue, 
                 comentarios:comentariosController.text);

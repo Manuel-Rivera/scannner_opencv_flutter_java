@@ -475,7 +475,7 @@ class Home extends StatelessWidget {
   Future<Tuple2<int, String>> numeroArchivo(BuildContext context) async {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.56.1:8080/siia/ldXML'),
+      Uri.parse('http://148.216.31.181:8080/siia/ldXML'),
     );
 
     // Parametros 
@@ -504,7 +504,7 @@ class Home extends StatelessWidget {
   Future <Tuple2<int, String>> sendFile(BuildContext context, DocumentModel document,informacionFormulario formInfo) async {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.56.1:8080/siia/carPDF2'),
+      Uri.parse('http://148.216.31.181:8080/siia/carPDF2'),
     );
 
     // Add the file parameter to the request
@@ -534,9 +534,9 @@ class Home extends StatelessWidget {
     request.fields['arch_nombre'] = document.name;              //Nombre real del archivo
     request.fields['arch_ctype'] = 'PDF';                       //Tipo de archivo
     request.fields['arch_size'] = file.lengthSync().toString(); //Tamaño del archivo en bytes
-    request.fields['arch_tdoc'] = '115';                        //Tipo de documento
+    request.fields['arch_tdoc'] = formInfo.tipoDocumentoPersonal;//Tipo de documento
     request.fields['arch_boveda'] = '1';                        //Identificador en la boveda
-    //request.fields['arch_wid'] = '';                          //Identificador ascendente para el siia web (OPCIONAL) Se obtiene desde el servlet
+    request.fields['arch_wid'] = '';                          //Identificador ascendente para el siia web (OPCIONAL) Se obtiene desde el servlet
     request.fields['arch_warchid'] = '';                        //Identificador archivo siia web            (OPCIONAL)     
     request.fields['arch_comen'] = '';                          //Comentarios                               (OPCIONAL)     
 

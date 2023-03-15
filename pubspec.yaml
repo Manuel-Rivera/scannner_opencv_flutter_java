@@ -31,6 +31,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  xml:
+    dependency: transitive
+    description:
+      name: xml
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.1.0"
+  http:
+  dependency: transitive
+  description:
+    name: http
+    url: "https://pub.dartlang.org"
+  source: hosted
+  version: "0.13.5"
+  
   #dio: ^4.0.4
   #dio_cookie_manager: ^2.0.0
   

@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 
 class informacionFormulario {
   final String matricula;
-  final int tipoDocumentoPersonal;
+  final String tipoDocumentoPersonal;
   final String comentarios;
   final String tipoDocumento;
   final String respuesta;
