@@ -479,7 +479,7 @@ class Home extends StatelessWidget {
   Future<Tuple2<int, String>> numeroArchivo(BuildContext context) async {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.56.1:8080/siia/ldXML'),
+      Uri.parse('http://148.216.31.181:8080/siia/ldXML'),
     );
 
     // Parametros
@@ -509,7 +509,7 @@ class Home extends StatelessWidget {
       DocumentModel document, InformacionFormulario formInfo) async {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.56.1:8080/siia/carPDF2'),
+      Uri.parse('http://148.216.31.181:8080/siia/carPDF2'),
     );
 
     // Add the file parameter to the request

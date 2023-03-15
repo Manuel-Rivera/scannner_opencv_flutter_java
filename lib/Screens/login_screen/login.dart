@@ -142,7 +142,7 @@ class _LoginState extends State<Login> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.56.1:8080/siia/respLogin2'),
+        Uri.parse('http://148.216.31.181:8080/siia/respLogin2'),
         body: {
           'usr': usr,
           'pwd': pwd,
