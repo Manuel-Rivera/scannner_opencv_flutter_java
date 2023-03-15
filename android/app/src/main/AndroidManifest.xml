@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.scannner_opencv_flutter_java">
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
         android:label="scannner_opencv_flutter_java"
         android:name="${applicationName}"
