@@ -1,24 +1,21 @@
-import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'search.dart';
+import 'dart:io';
 
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:xml/xml.dart';
 
-
 import '../../Model/docuement_model.dart';
 import '../../Model/informacion_formulario.dart';
 import '../../Providers/document_provider.dart';
 import '../../Providers/login_provider.dart';
 import '../../widgets/widgets.dart';
-import '../login_screen/login.dart';
 import '../scanner_screen/drawer.dart';
 import '../scanner_screen/new_image.dart';
 import '../scanner_screen/pdf_screen.dart';
@@ -115,7 +112,7 @@ class Home extends StatelessWidget {
   //!DOCUMENT CARD
   Widget _documentCard(BuildContext context, DocumentModel document,
       Animation<double> animation) {
-        bool enviando = false;
+    bool enviando = false;
     return SizeTransition(
       sizeFactor: animation,
       child: Card(
@@ -200,33 +197,40 @@ class Home extends StatelessWidget {
                       ),
                       StatefulBuilder(
                         builder: (BuildContext context, StateSetter setState) {
-                          if(enviando){
-                            return CircularProgressIndicator();
-                          }
-                          else{
+                          if (enviando) {
+                            return const CircularProgressIndicator();
+                          } else {
                             return IconButton(
                               icon: Icon(
                                 Icons.cloud_upload,
                                 color: ThemeData.dark().colorScheme.secondary,
                               ),
                               onPressed: () async {
-                                informacionFormulario? result = await formularioEnvio(context);
-                                if(result != null && result.respuesta.compareTo("cancel") != 0){
-                                  print("************ result.respuesta: "+result.respuesta);
-                                  print("************ matricula: "+result.matricula);
-                                  print("************ tipoDocumento: "+result.tipoDocumento);
-                                  print("************ Comentarios: "+result.comentarios);
-                                  print("************ tipoDocumentoPersonal: "+result.tipoDocumentoPersonal.toString());
-                                  //Evita el envio multiple del mismo archivo si ya esta enviandose 
-                                  if (!enviando){ 
+                                InformacionFormulario? result =
+                                    await formularioEnvio(context);
+                                if (result != null &&
+                                    result.respuesta.compareTo("cancel") != 0) {
+                                  print(
+                                      "************ result.respuesta: ${result.respuesta}");
+                                  print(
+                                      "************ matricula: ${result.matricula}");
+                                  print(
+                                      "************ tipoDocumento: ${result.tipoDocumento}");
+                                  print(
+                                      "************ Comentarios: ${result.comentarios}");
+                                  print(
+                                      "************ tipoDocumentoPersonal: ${result.tipoDocumentoPersonal}");
+                                  //Evita el envio multiple del mismo archivo si ya esta enviandose
+                                  if (!enviando) {
                                     enviando = true;
-                                    setState(() {});      
-                                    sendFile(context,document,result).then((tuple) {
+                                    setState(() {});
+                                    sendFile(context, document, result)
+                                        .then((tuple) {
                                       //int arriva = tuple.item1;
                                       String mensaje = tuple.item2;
                                       enviando = false;
                                       setState(() {});
-                                      alertaDocumentoSubido(context,mensaje);
+                                      alertaDocumentoSubido(context, mensaje);
                                     });
                                   }
                                 }
@@ -478,30 +482,31 @@ class Home extends StatelessWidget {
       Uri.parse('http://192.168.56.1:8080/siia/ldXML'),
     );
 
-    // Parametros 
+    // Parametros
     request.fields['lista'] = 'lista';
     request.fields['cuso'] = 'comun.cntArchis';
-    
+
     // Set the session ID as a cookie in the request headers
-    request.headers['cookie'] = 'JSESSIONID='+context.read<loginProvider>().obtener_idSesion();
-    try{
+    request.headers['cookie'] =
+        'JSESSIONID=${context.read<LoginProvider>().obtenerIdSesion()}';
+    try {
       // Send the request and get the response
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
       //var responseBody = "";
-      
+
       //La respuesta viene en un HTML asi que se convierte en un XmlDocument
       final document = XmlDocument.parse(responseBody);
       final cntElement = document.findAllElements('CNT').first;
       final cntValue = cntElement.text;
       return Tuple2(1, cntValue);
-    }catch(e){
+    } catch (e) {
       return Tuple2(0, e.toString());
     }
   }
 
-
-  Future <Tuple2<int, String>> sendFile(BuildContext context, DocumentModel document,informacionFormulario formInfo) async {
+  Future<Tuple2<int, String>> sendFile(BuildContext context,
+      DocumentModel document, InformacionFormulario formInfo) async {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('http://192.168.56.1:8080/siia/carPDF2'),
@@ -511,8 +516,8 @@ class Home extends StatelessWidget {
     var file = File(document.pdfPath);
     var stream = http.ByteStream(file.openRead());
     var length = await file.length();
-    var multipartFile = http.MultipartFile('archi', stream, length,
-        filename: 'example.pdf');
+    var multipartFile =
+        http.MultipartFile('archi', stream, length, filename: 'example.pdf');
 
     request.files.add(multipartFile);
 
@@ -520,30 +525,36 @@ class Home extends StatelessWidget {
     Tuple2<int, String> respNum = await numeroArchivo(context);
 
     //Si hubo un fallo al obtener el siguiente numero de secuencia
-    if(respNum.item1==0){
-      return respNum; 
+    if (respNum.item1 == 0) {
+      return respNum;
     }
 
     // Add other parameters to the request
-    request.fields['usr'] = context.read<loginProvider>().obtener_usuario();
-    request.fields['num'] = respNum.item2;                      //Numero de la secuencia que le corresponde al archivo
-    request.fields['dir'] = 'archivos';                         //Directorio donde se guardara el arhivo
-    request.fields['id'] = respNum.item2;                       //Id del archivo
-    request.fields['coments'] = 'Desde flutter';                //Comentarios 
-    request.fields['arch_alumno'] = formInfo.matricula;         //Matricula del alumno que le corresponde el archivo
-    request.fields['arch_nombre'] = document.name;              //Nombre real del archivo
-    request.fields['arch_ctype'] = 'PDF';                       //Tipo de archivo
-    request.fields['arch_size'] = file.lengthSync().toString(); //Tamaño del archivo en bytes
-    request.fields['arch_tdoc'] = '115';                        //Tipo de documento
-    request.fields['arch_boveda'] = '1';                        //Identificador en la boveda
+    request.fields['usr'] = context.read<LoginProvider>().obtenerUsuario();
+    request.fields['num'] =
+        respNum.item2; //Numero de la secuencia que le corresponde al archivo
+    request.fields['dir'] = 'archivos'; //Directorio donde se guardara el arhivo
+    request.fields['id'] = respNum.item2; //Id del archivo
+    request.fields['coments'] = 'Desde flutter'; //Comentarios
+    request.fields['arch_alumno'] =
+        formInfo.matricula; //Matricula del alumno que le corresponde el archivo
+    request.fields['arch_nombre'] = document.name; //Nombre real del archivo
+    request.fields['arch_ctype'] = 'PDF'; //Tipo de archivo
+    request.fields['arch_size'] =
+        file.lengthSync().toString(); //Tamaño del archivo en bytes
+    request.fields['arch_tdoc'] = '115'; //Tipo de documento
+    request.fields['arch_boveda'] = '1'; //Identificador en la boveda
     //request.fields['arch_wid'] = '';                          //Identificador ascendente para el siia web (OPCIONAL) Se obtiene desde el servlet
-    request.fields['arch_warchid'] = '';                        //Identificador archivo siia web            (OPCIONAL)     
-    request.fields['arch_comen'] = '';                          //Comentarios                               (OPCIONAL)     
+    request.fields['arch_warchid'] =
+        ''; //Identificador archivo siia web            (OPCIONAL)
+    request.fields['arch_comen'] =
+        ''; //Comentarios                               (OPCIONAL)
 
     // Set the session ID as a cookie in the request headers
-    request.headers['cookie'] = 'JSESSIONID='+context.read<loginProvider>().obtener_idSesion();
+    request.headers['cookie'] =
+        'JSESSIONID=${context.read<LoginProvider>().obtenerIdSesion()}';
 
-    try{
+    try {
       // Send the request and get the response
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
@@ -552,16 +563,17 @@ class Home extends StatelessWidget {
       //Si se recibio una respuesta
       if (response.statusCode == 200) {
         //Si la respuesta contiene un error
-        if(jsonResponse.containsKey('ERROR')){
-            return Tuple2(0, jsonResponse["ERROR"]);
-          }
-          if(jsonResponse.containsKey('OK')){
-            return Tuple2(1, "OK");
-          }
+        if (jsonResponse.containsKey('ERROR')) {
+          return Tuple2(0, jsonResponse["ERROR"]);
+        }
+        if (jsonResponse.containsKey('OK')) {
+          return const Tuple2(1, "OK");
+        }
       }
       //Respuesta negativa
       return Tuple2(0, response.statusCode.toString());
-    }catch(e){ //Cuando no se reciba una respuesta
+    } catch (e) {
+      //Cuando no se reciba una respuesta
       return Tuple2(0, e.toString());
     }
   }

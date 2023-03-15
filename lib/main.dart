@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'Providers/document_provider.dart';
+import 'Providers/login_provider.dart';
 import 'Routes/routes.dart';
 import 'Screens/login_screen/login.dart';
-import 'Providers/login_provider.dart';
 
 //Migración a provider
 void main() {
@@ -24,8 +24,8 @@ class AppState extends StatelessWidget {
         ChangeNotifierProvider<GlobalKeyStore>(
           create: ((_) => GlobalKeyStore()),
         ),
-        ChangeNotifierProvider<loginProvider>(
-          create: ((_) => loginProvider()),
+        ChangeNotifierProvider<LoginProvider>(
+          create: ((_) => LoginProvider()),
         ),
       ],
       child: const Scanner(),
@@ -46,8 +46,8 @@ class Scanner extends StatelessWidget {
               backgroundColor: ThemeData.dark().canvasColor),
           textSelectionTheme:
               const TextSelectionThemeData(selectionColor: Colors.blueGrey)),
-      home: Login(),
-      initialRoute: 'home',
+      home: const Login(),
+      initialRoute: 'login',
       routes: Routes.getAppRoutes(),
       onGenerateRoute: (settings) => Routes.onGenerateRoute(settings),
     );

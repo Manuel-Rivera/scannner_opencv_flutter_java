@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'dropdowns.dart';
-import '../Model/models.dart';
 
+import '../Model/models.dart';
+import 'dropdowns.dart';
 
 // Alerta de error con un mensaje predeterminado
-void muestraAlerta(BuildContext context, String mensaje){
+void muestraAlerta(BuildContext context, String mensaje) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Error'),
+        title: const Text('Error'),
         content: Text(mensaje),
         actions: <Widget>[
           TextButton(
-            child: Text('OK'),
+            child: const Text('OK'),
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -25,16 +25,16 @@ void muestraAlerta(BuildContext context, String mensaje){
 }
 
 // Alerta para indicar el resultado de un documento que se trato de subir
-void alertaDocumentoSubido(BuildContext context, String mensaje){
+void alertaDocumentoSubido(BuildContext context, String mensaje) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Subida Archivo'),
+        title: const Text('Subida Archivo'),
         content: Text(mensaje),
         actions: <Widget>[
           TextButton(
-            child: Text('OK'),
+            child: const Text('OK'),
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -46,7 +46,7 @@ void alertaDocumentoSubido(BuildContext context, String mensaje){
 }
 
 //Formulario de datos adicionales a cada archivo
-Future<informacionFormulario?> formularioEnvio(BuildContext context) async {
+Future<InformacionFormulario?> formularioEnvio(BuildContext context) async {
   String selectedValue = "";
   final matriculaController = TextEditingController();
   final comentariosController = TextEditingController();
@@ -57,18 +57,21 @@ Future<informacionFormulario?> formularioEnvio(BuildContext context) async {
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Datos del documento'),
+        title: const Text('Datos del documento'),
         content: Form(
           key: formularioKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                validator: (value){ if (value == null || value.isEmpty){
-                  return 'Matricula faltante';
-                } return null;},
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Matricula faltante';
+                  }
+                  return null;
+                },
                 controller: matriculaController,
-                decoration: InputDecoration(hintText: "Matricula"),
+                decoration: const InputDecoration(hintText: "Matricula"),
               ),
               //Creacion del DropdownButton para seleccionar el tipo de documento
               DropdownButtonExample(
@@ -79,56 +82,53 @@ Future<informacionFormulario?> formularioEnvio(BuildContext context) async {
               ),
               TextFormField(
                 controller: comentariosController,
-                decoration: InputDecoration(hintText: "Comentarios"),
+                decoration: const InputDecoration(hintText: "Comentarios"),
               ),
               TextFormField(
                 controller: tipoDocumentoController,
-                decoration: InputDecoration(hintText: "Tipo de documento"),
+                decoration:
+                    const InputDecoration(hintText: "Tipo de documento"),
               ),
             ],
           ),
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: (){ 
-              informacionFormulario formInfo = informacionFormulario(
-                matricula: matriculaController.text, 
-                tipoDocumentoPersonal: 10, 
-                respuesta: 'cancel',
-                tipoDocumento: selectedValue,
-                comentarios:comentariosController.text);
+            onPressed: () {
+              InformacionFormulario formInfo = InformacionFormulario(
+                  matricula: matriculaController.text,
+                  tipoDocumentoPersonal: 10,
+                  respuesta: 'cancel',
+                  tipoDocumento: selectedValue,
+                  comentarios: comentariosController.text);
               Navigator.of(context).pop(formInfo);
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: (){ 
+            onPressed: () {
               //Validaciones de campos requeridos
-              if (!formularioKey.currentState!.validate()){
+              if (!formularioKey.currentState!.validate()) {
                 return;
               }
-              if(selectedValue.isEmpty){
-                return muestraAlerta(context,"Tipo de documento no establecido");
+              if (selectedValue.isEmpty) {
+                return muestraAlerta(
+                    context, "Tipo de documento no establecido");
               }
               //Envio de archivos
-              informacionFormulario formInfo = informacionFormulario(
-                matricula: matriculaController.text, 
-                tipoDocumentoPersonal: 10, 
-                respuesta: 'OK', 
-                tipoDocumento: selectedValue, 
-                comentarios:comentariosController.text);
+              InformacionFormulario formInfo = InformacionFormulario(
+                  matricula: matriculaController.text,
+                  tipoDocumentoPersonal: 10,
+                  respuesta: 'OK',
+                  tipoDocumento: selectedValue,
+                  comentarios: comentariosController.text);
 
               Navigator.of(context).pop(formInfo);
             },
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       );
     },
   );
 }
-
-
-
-
-

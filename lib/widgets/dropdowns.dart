@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
-const List<String> list = <String>['CERTIFICACION DE FIRMAS',
-'ACTA DE NACIMIENTO',
-'CERTIFICADO GLOBAL DE ESTUDIOS',
-'TITULO DE MAESTRIA 2',
-'CONSTANCIA DE TERM. DE LIC.',
-'CONSTANCIA DE TERM. DE ESP.',
-'CONSTANCIA DE TERM. DE MAEST.'];
+const List<String> list = <String>[
+  'CERTIFICACION DE FIRMAS',
+  'ACTA DE NACIMIENTO',
+  'CERTIFICADO GLOBAL DE ESTUDIOS',
+  'TITULO DE MAESTRIA 2',
+  'CONSTANCIA DE TERM. DE LIC.',
+  'CONSTANCIA DE TERM. DE ESP.',
+  'CONSTANCIA DE TERM. DE MAEST.'
+];
 
 class DropdownButtonExample extends StatefulWidget {
   //Definicion de una funcion callback
-  final Function(String) onSelectedValueChanged;  
+  final Function(String) onSelectedValueChanged;
   //El constructor pide como argumento una funcion
   //Esta funcion se llamara cuando haya un cambio en el valor seleccionado de DropdownButton
   const DropdownButtonExample({Key? key, required this.onSelectedValueChanged})
@@ -21,12 +23,12 @@ class DropdownButtonExample extends StatefulWidget {
 }
 
 class _DropdownButtonExampleState extends State<DropdownButtonExample> {
-  String? dropdownValue = null;
+  String? dropdownValue;
 
   @override
   Widget build(BuildContext context) {
     return DropdownButton<String>(
-      hint: Text("Tipo de documento"),
+      hint: const Text("Tipo de documento"),
       value: dropdownValue,
       icon: const Icon(Icons.arrow_drop_down),
       elevation: 16,
@@ -41,7 +43,8 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
           dropdownValue = value!;
         });
         //Llamada a la funcion callback pasandole como parametro el valor seleccionado
-        widget.onSelectedValueChanged(dropdownValue!); // Call the callback function with the selected value
+        widget.onSelectedValueChanged(
+            dropdownValue!); // Call the callback function with the selected value
       },
       items: list.map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
