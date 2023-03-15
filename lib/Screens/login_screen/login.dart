@@ -102,7 +102,7 @@ class _LoginState extends State<Login>{
                     ],
                   )
                 ),
-                //Construye la animacion de cargando (O no) cuando sea necesario
+                //Construye la animacion de cargando cuando sea necesario
                 Consumer<loginProvider>(
                   builder: (context, provider, child) {
                     if (provider.obtener_cargando()) {  //Si esta cargando
@@ -122,43 +122,40 @@ class _LoginState extends State<Login>{
 
   //Post al login del servlet
   Future<Tuple2<int, String>> callLogin(BuildContext context, String usr, String pwd) async {
-    //cargando = true;
-    //context.read<loginProvider>().cambiar_cargando(true);
     Provider.of<loginProvider>(context, listen: false).cambiar_cargando(true);
-    //setState(() {});
-    //await Future.delayed(const Duration(seconds: 5));
-    
-    final response = await http.post(
-      Uri.parse('http://192.168.56.1:8080/siia/respLogin2'),
-      body: {
-        'usr': usr,
-        'pwd': pwd,
-        'B1': 'entrar',
-        'TAB': '1',
-      },
-    );
 
-    //cargando = false;
-    //context.read<loginProvider>().cambiar_cargando(false);
-    Provider.of<loginProvider>(context, listen: false).cambiar_cargando(false);
-    //setState(() {});                                        //Es necesario para que elimine la animacion de cargando
-    var jsonResponse = json.decode(response.body);
-    
-    //Verificacion de la respuesta del servidor
-    if (response.statusCode == 200) {
-      
-      if(jsonResponse.containsKey('ERROR')){
-        return Tuple2(0, jsonResponse["ERROR"]);
-      }
+    try{
+      final response = await http.post(
+        Uri.parse('http://192.168.56.1:8080/siia/respLogin2'),
+        body: {
+          'usr': usr,
+          'pwd': pwd,
+          'B1': 'entrar',
+          'TAB': '1',
+        },
+      );
 
-      if(jsonResponse.containsKey('OK')){
-        //idSesion=jsonResponse["JSESSIONID"]; //Obtencion del Id de la sesion 
-        context.read<loginProvider>().establece_idSesion(jsonResponse["JSESSIONID"],jsonResponse["USR"]);
-        return Tuple2(1, "OK");
+      Provider.of<loginProvider>(context, listen: false).cambiar_cargando(false);
+      var jsonResponse = json.decode(response.body);
+      //Verificacion de la respuesta del servidor
+
+      if (response.statusCode == 200) {
+        
+        if(jsonResponse.containsKey('ERROR')){
+          return Tuple2(0, jsonResponse["ERROR"]);
+        }
+
+        if(jsonResponse.containsKey('OK')){
+          context.read<loginProvider>().establece_idSesion(jsonResponse["JSESSIONID"],jsonResponse["USR"]);
+          return Tuple2(1, "OK");
+        }
       }
-      
+      return Tuple2(0, response.statusCode.toString());
     }
-    return Tuple2(0, response.statusCode.toString());
+    catch(e){
+        Provider.of<loginProvider>(context, listen: false).cambiar_cargando(false);
+       return Tuple2(0, e.toString());
+    }
   }
 
 }

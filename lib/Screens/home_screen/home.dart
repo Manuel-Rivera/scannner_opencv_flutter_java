@@ -215,12 +215,13 @@ class Home extends StatelessWidget {
                                   print("************ result.respuesta: "+result.respuesta);
                                   print("************ matricula: "+result.matricula);
                                   print("************ tipoDocumento: "+result.tipoDocumento);
+                                  print("************ Comentarios: "+result.comentarios);
+                                  print("************ tipoDocumentoPersonal: "+result.tipoDocumentoPersonal.toString());
                                   //Evita el envio multiple del mismo archivo si ya esta enviandose 
                                   if (!enviando){ 
                                     enviando = true;
-                                    setState(() {});
-                                    var documentPath = document.pdfPath;        
-                                    sendFile(context,documentPath,result).then((tuple) {
+                                    setState(() {});      
+                                    sendFile(context,document,result).then((tuple) {
                                       //int arriva = tuple.item1;
                                       String mensaje = tuple.item2;
                                       enviando = false;
@@ -471,7 +472,7 @@ class Home extends StatelessWidget {
   }
 
   //Envia una peticion para obtener el nombre del archivo a subir (numero consecutivo)
-  Future<String> numeroArchivo(BuildContext context) async {
+  Future<Tuple2<int, String>> numeroArchivo(BuildContext context) async {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('http://192.168.56.1:8080/siia/ldXML'),
@@ -483,26 +484,31 @@ class Home extends StatelessWidget {
     
     // Set the session ID as a cookie in the request headers
     request.headers['cookie'] = 'JSESSIONID='+context.read<loginProvider>().obtener_idSesion();
-    // Send the request and get the response
-    var response = await request.send();
-    var responseBody = await response.stream.bytesToString();
-    
-    //La respuesta viene en un HTML asi que se convierte en un XmlDocument
-    final document = XmlDocument.parse(responseBody);
-    final cntElement = document.findAllElements('CNT').first;
-    final cntValue = cntElement.text;
-    return cntValue;  
+    try{
+      // Send the request and get the response
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+      //var responseBody = "";
+      
+      //La respuesta viene en un HTML asi que se convierte en un XmlDocument
+      final document = XmlDocument.parse(responseBody);
+      final cntElement = document.findAllElements('CNT').first;
+      final cntValue = cntElement.text;
+      return Tuple2(1, cntValue);
+    }catch(e){
+      return Tuple2(0, e.toString());
+    }
   }
 
 
-  Future <Tuple2<int, String>> sendFile(BuildContext context, String path,informacionFormulario formInfo) async {
+  Future <Tuple2<int, String>> sendFile(BuildContext context, DocumentModel document,informacionFormulario formInfo) async {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('http://192.168.56.1:8080/siia/carPDF2'),
     );
 
     // Add the file parameter to the request
-    var file = File(path);
+    var file = File(document.pdfPath);
     var stream = http.ByteStream(file.openRead());
     var length = await file.length();
     var multipartFile = http.MultipartFile('archi', stream, length,
@@ -511,43 +517,52 @@ class Home extends StatelessWidget {
     request.files.add(multipartFile);
 
     //Secuencia del archivo a subir
-    String numero = await numeroArchivo(context);
+    Tuple2<int, String> respNum = await numeroArchivo(context);
+
+    //Si hubo un fallo al obtener el siguiente numero de secuencia
+    if(respNum.item1==0){
+      return respNum; 
+    }
+
     // Add other parameters to the request
     request.fields['usr'] = context.read<loginProvider>().obtener_usuario();
-    request.fields['num'] = numero;                     //Numero de la secuencia que le corresponde al archivo
-    request.fields['dir'] = 'archivos';                 //Directorio donde se guardara el arhivo
-    request.fields['id'] = numero;                      //Id del archivo
-    request.fields['coments'] = 'Desde flutter';        //Comentarios 
-    request.fields['arch_alumno'] = formInfo.matricula; //Matricula del alumno que le corresponde el archivo
-    request.fields['arch_nombre'] = 'NOMBRE';           //Nombre real del archivo
-    request.fields['arch_ctype'] = 'PDF';               //Tipo de archivo
-    request.fields['arch_size'] = '345684';             //Tamaño del archivo
-    request.fields['arch_tdoc'] = '115';                //Tipo de documento
-    request.fields['arch_boveda'] = '1';                //Identificador en la boveda
-    request.fields['arch_wid'] = '';                    //Identificador ascendente para el siia web           (OPCIONAL)
-    request.fields['arch_warchid'] = '';                //Identificador archivo siia web                      (OPCIONAL)     
-    request.fields['arch_comen'] = '';                  //Comentarios                                         (OPCIONAL)     
-
-    
+    request.fields['num'] = respNum.item2;                      //Numero de la secuencia que le corresponde al archivo
+    request.fields['dir'] = 'archivos';                         //Directorio donde se guardara el arhivo
+    request.fields['id'] = respNum.item2;                       //Id del archivo
+    request.fields['coments'] = 'Desde flutter';                //Comentarios 
+    request.fields['arch_alumno'] = formInfo.matricula;         //Matricula del alumno que le corresponde el archivo
+    request.fields['arch_nombre'] = document.name;              //Nombre real del archivo
+    request.fields['arch_ctype'] = 'PDF';                       //Tipo de archivo
+    request.fields['arch_size'] = file.lengthSync().toString(); //Tamaño del archivo en bytes
+    request.fields['arch_tdoc'] = '115';                        //Tipo de documento
+    request.fields['arch_boveda'] = '1';                        //Identificador en la boveda
+    //request.fields['arch_wid'] = '';                          //Identificador ascendente para el siia web (OPCIONAL) Se obtiene desde el servlet
+    request.fields['arch_warchid'] = '';                        //Identificador archivo siia web            (OPCIONAL)     
+    request.fields['arch_comen'] = '';                          //Comentarios                               (OPCIONAL)     
 
     // Set the session ID as a cookie in the request headers
     request.headers['cookie'] = 'JSESSIONID='+context.read<loginProvider>().obtener_idSesion();
 
-    // Send the request and get the response
-    var response = await request.send();
-    var responseBody = await response.stream.bytesToString();
-    var jsonResponse = json.decode(responseBody);
-    print(context.read<loginProvider>().obtener_usuario());
-    print(jsonResponse);
+    try{
+      // Send the request and get the response
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+      var jsonResponse = json.decode(responseBody);
 
-    if (response.statusCode == 200) {
-      if(jsonResponse.containsKey('ERROR')){
-          return Tuple2(0, jsonResponse["ERROR"]);
-        }
-        if(jsonResponse.containsKey('OK')){
-          return Tuple2(1, "OK");
-        }
+      //Si se recibio una respuesta
+      if (response.statusCode == 200) {
+        //Si la respuesta contiene un error
+        if(jsonResponse.containsKey('ERROR')){
+            return Tuple2(0, jsonResponse["ERROR"]);
+          }
+          if(jsonResponse.containsKey('OK')){
+            return Tuple2(1, "OK");
+          }
+      }
+      //Respuesta negativa
+      return Tuple2(0, response.statusCode.toString());
+    }catch(e){ //Cuando no se reciba una respuesta
+      return Tuple2(0, e.toString());
     }
-    return Tuple2(0, response.statusCode.toString());
   }
 }

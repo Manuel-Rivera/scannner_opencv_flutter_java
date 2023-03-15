@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
-const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+const List<String> list = <String>['CERTIFICACION DE FIRMAS',
+'ACTA DE NACIMIENTO',
+'CERTIFICADO GLOBAL DE ESTUDIOS',
+'TITULO DE MAESTRIA 2',
+'CONSTANCIA DE TERM. DE LIC.',
+'CONSTANCIA DE TERM. DE ESP.',
+'CONSTANCIA DE TERM. DE MAEST.'];
+
 class DropdownButtonExample extends StatefulWidget {
   //Definicion de una funcion callback
   final Function(String) onSelectedValueChanged;  
