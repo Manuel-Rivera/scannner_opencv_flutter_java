@@ -549,7 +549,6 @@ class Home extends StatelessWidget {
         ''; //Identificador archivo siia web            (OPCIONAL)
     request.fields['arch_comen'] =
         ''; //Comentarios                               (OPCIONAL)
-
     // Set the session ID as a cookie in the request headers
     request.headers['cookie'] =
         'JSESSIONID=${context.read<LoginProvider>().obtenerIdSesion()}';
