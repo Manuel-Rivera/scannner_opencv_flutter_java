@@ -542,7 +542,7 @@ class Home extends StatelessWidget {
     request.fields['arch_ctype'] = 'PDF'; //Tipo de archivo
     request.fields['arch_size'] =
         file.lengthSync().toString(); //Tamaño del archivo en bytes
-    request.fields['arch_tdoc'] = '115'; //Tipo de documento
+    request.fields['arch_tdoc'] = formInfo.tipoDocumentoPersonal; //Tipo de documento
     request.fields['arch_boveda'] = '1'; //Identificador en la boveda
     //request.fields['arch_wid'] = '';                          //Identificador ascendente para el siia web (OPCIONAL) Se obtiene desde el servlet
     request.fields['arch_warchid'] =
