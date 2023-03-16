@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'Providers/document_provider.dart';
 import 'Providers/login_provider.dart';
+import 'Providers/tipo_documentos_provider.dart';
 import 'Routes/routes.dart';
 import 'Screens/login_screen/login.dart';
 
@@ -26,6 +27,9 @@ class AppState extends StatelessWidget {
         ),
         ChangeNotifierProvider<LoginProvider>(
           create: ((_) => LoginProvider()),
+        ),
+        ChangeNotifierProvider<tipoDocumentoProvider>(
+          create: ((_) => tipoDocumentoProvider()),
         ),
       ],
       child: const Scanner(),
