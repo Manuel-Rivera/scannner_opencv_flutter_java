@@ -57,7 +57,8 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
         widget.onSelectedValueChanged(
             dropdownValue!); // Call the callback function with the selected value
       },
-      items: Provider.of<tipoDocumentoProvider>(context, listen: false).getListaTDocums()
+      items: Provider.of<tipoDocumentoProvider>(context, listen: false).getListaTDocums(),
+      isExpanded: true,
     );
   }
 }
