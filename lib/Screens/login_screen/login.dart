@@ -158,7 +158,7 @@ class _LoginState extends State<Login> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://148.216.31.181:8080/siia/respLogin2'),
+        Uri.parse('http://148.216.31.181:8080/siia/respLogin'),
         body: {
           'usr': usr,
           'pwd': pwd,
@@ -192,7 +192,7 @@ class _LoginState extends State<Login> {
   Future<Tuple2<int, String>> stringTdocum(BuildContext context) async {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://148.216.31.181:8080/siia/getPTDOCEMP'),
+      Uri.parse('http://148.216.31.181:8080/siia/getPTDOCEMP2'),
     );
 
     // Set the session ID as a cookie in the request headers

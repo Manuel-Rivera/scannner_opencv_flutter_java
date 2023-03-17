@@ -222,6 +222,7 @@ class Home extends StatelessWidget {
                                       "************ tipoDocumentoPersonal: ${result.tipoDocumentoPersonal}");
                                   //Evita el envio multiple del mismo archivo si ya esta enviandose
                                   if (!enviando) {
+                                    print("ENVIADO");
                                     enviando = true;
                                     setState(() {});
                                     sendFile(context, document, result)
@@ -486,6 +487,7 @@ class Home extends StatelessWidget {
     request.fields['lista'] = 'lista';
     request.fields['cuso'] = 'comun.cntArchis';
 
+    print('JSESSIONID=${context.read<LoginProvider>().obtenerIdSesion()}');
     // Set the session ID as a cookie in the request headers
     request.headers['cookie'] =
         'JSESSIONID=${context.read<LoginProvider>().obtenerIdSesion()}';
@@ -507,9 +509,10 @@ class Home extends StatelessWidget {
 
   Future<Tuple2<int, String>> sendFile(BuildContext context,
       DocumentModel document, InformacionFormulario formInfo) async {
+        print("SEND FILE");
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://148.216.31.181:8080/siia/carPDF2'),
+      Uri.parse('http://148.216.31.181:8080/siia/carPDF'),
     );
 
     // Add the file parameter to the request
@@ -525,6 +528,7 @@ class Home extends StatelessWidget {
     Tuple2<int, String> respNum = await numeroArchivo(context);
 
     //Si hubo un fallo al obtener el siguiente numero de secuencia
+    print("respNum: $respNum");
     if (respNum.item1 == 0) {
       return respNum;
     }
@@ -554,7 +558,7 @@ class Home extends StatelessWidget {
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
       var jsonResponse = json.decode(responseBody);
-
+      print("jsonResponse: $jsonResponse");
       //Si se recibio una respuesta
       if (response.statusCode == 200) {
         //Si la respuesta contiene un error
