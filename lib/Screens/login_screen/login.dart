@@ -101,12 +101,14 @@ class _LoginState extends State<Login> {
                                login = tuple.item1;
                                mensaje = tuple.item2;
 
-
-                              List<DropdownMenuItem<String>> dropdownTDocums = await StringToDropdownlist(context);
-                              Provider.of<tipoDocumentoProvider>(context, listen: false).setListaTDocums(dropdownTDocums);
-                              Provider.of<LoginProvider>(context, listen: false).cambiarCargando(false);
                               //Login correcto
                               if (login == 1) {
+                                //Consulta la lista de Tipos de documentos de la base de datos
+                                List<DropdownMenuItem<String>> dropdownTDocums = await StringToDropdownlist(context);
+                                //Almacena la lista en un Provider en forma de list<DropdownMenuItem<String>>
+                                Provider.of<tipoDocumentoProvider>(context, listen: false).setListaTDocums(dropdownTDocums);
+                                //Cambia el estado del login para que no este cargando
+                                Provider.of<LoginProvider>(context, listen: false).cambiarCargando(false);
                                 //Llamada a una nueva ventana
                                 Navigator.pushReplacement(
                                   context,
@@ -115,23 +117,10 @@ class _LoginState extends State<Login> {
                                 );
                               } else {
                                 //Error en login
+                                Provider.of<LoginProvider>(context, listen: false).cambiarCargando(false);
                                 muestraAlerta(context, mensaje.toString());
                               }
-                            });
-
-                            if(login == 1 ){ 
-                              //Consulta la lista de Tipos de documentos de la base de datos
-                              List<DropdownMenuItem<String>> dropdownTDocums = await StringToDropdownlist(context);
-                              //Almacena la lista en un Provider en forma de list<DropdownMenuItem<String>>
-                              Provider.of<tipoDocumentoProvider>(context, listen: false).setListaTDocums(dropdownTDocums);
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const Home()),
-                                );
-                            }else if(login == 0){
-                               muestraAlerta(context, mensaje.toString());
-                            }
+                            }); 
                           }
                         },
                         child: const Text("Entrar")),
@@ -218,8 +207,14 @@ class _LoginState extends State<Login> {
 
 //Funcion que crea una lista de DropdownMenuItem en base a una peticion POST a la base de datos
 Future<List<DropdownMenuItem<String>>> StringToDropdownlist(BuildContext context) async{
+  // Obtiene una cadena en forma de JSON que representa todos los tipos de documentos 
   String tdocum = await stringTdocum(context);
-  List<String> parts = tdocum.replaceAll("{", "").replaceAll("}", "").split(", ");
+  // Elimina caracteres inecesarios 
+  //List<String> parts = tdocum.replaceAll("{", "").replaceAll("}", "").replaceAll('"', "").replaceAll(",OK:OK", "").split(", ");
+  List<String> parts = tdocum.replaceAll(RegExp(r'[{}"]+'), '').replaceAll(",OK:OK", "").split(', ');
+  parts[0] = parts[0].substring(parts[0].lastIndexOf(":")+1);
+  // Ordena la lista alfabeticamente por las subcadenas que representan el "NOMBRE" del tipo de documento
+  parts.sort((a, b) => a.substring(a.lastIndexOf("=")).compareTo(b.substring(b.lastIndexOf("="))));
   List<DropdownMenuItem<String>> dropdownItems = parts.map((part) {
   List<String> pair = part.split("=");
   return DropdownMenuItem(

@@ -531,24 +531,19 @@ class Home extends StatelessWidget {
 
     // Add other parameters to the request
     request.fields['usr'] = context.read<LoginProvider>().obtenerUsuario();
-    request.fields['num'] =
-        respNum.item2; //Numero de la secuencia que le corresponde al archivo
-    request.fields['dir'] = 'archivos'; //Directorio donde se guardara el arhivo
-    request.fields['id'] = respNum.item2; //Id del archivo
-    request.fields['coments'] = 'Desde flutter'; //Comentarios
-    request.fields['arch_alumno'] =
-        formInfo.matricula; //Matricula del alumno que le corresponde el archivo
-    request.fields['arch_nombre'] = document.name; //Nombre real del archivo
-    request.fields['arch_ctype'] = 'PDF'; //Tipo de archivo
-    request.fields['arch_size'] =
-        file.lengthSync().toString(); //Tamaño del archivo en bytes
+    request.fields['num'] = respNum.item2;                        //Numero de la secuencia que le corresponde al archivo
+    request.fields['dir'] = 'archivos';                           //Directorio donde se guardara el arhivo
+    request.fields['id'] = respNum.item2;                         //Id del archivo
+    request.fields['coments'] = 'Desde flutter';                  //Comentarios
+    request.fields['arch_alumno'] = formInfo.matricula;           //Matricula del alumno que le corresponde el archivo
+    request.fields['arch_nombre'] = document.name;                //Nombre real del archivo
+    request.fields['arch_ctype'] = formInfo.tipoDocumento;        //Tipo de archivo
+    request.fields['arch_size'] = file.lengthSync().toString();   //Tamaño del archivo en bytes
     request.fields['arch_tdoc'] = formInfo.tipoDocumentoPersonal; //Tipo de documento
-    request.fields['arch_boveda'] = '1'; //Identificador en la boveda
-    //request.fields['arch_wid'] = '';                          //Identificador ascendente para el siia web (OPCIONAL) Se obtiene desde el servlet
-    request.fields['arch_warchid'] =
-        ''; //Identificador archivo siia web            (OPCIONAL)
-    request.fields['arch_comen'] =
-        ''; //Comentarios                               (OPCIONAL)
+    request.fields['arch_boveda'] = '1';                          //Identificador en la boveda
+    //request.fields['arch_wid'] = '';                            //Identificador ascendente para el siia web (OPCIONAL) Se obtiene desde el servlet
+    request.fields['arch_warchid'] = '';                          //Identificador archivo siia web            (OPCIONAL)
+    request.fields['arch_comen'] = formInfo.comentarios;          //Comentarios                               (OPCIONAL)
     // Set the session ID as a cookie in the request headers
     request.headers['cookie'] =
         'JSESSIONID=${context.read<LoginProvider>().obtenerIdSesion()}';

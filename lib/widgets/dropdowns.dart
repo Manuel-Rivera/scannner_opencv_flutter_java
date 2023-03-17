@@ -39,7 +39,7 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
   @override
   Widget build(BuildContext context) {
     return DropdownButton<String>(
-      hint: const Text("Tipo de documento"),
+      hint: const Text("Tipo de documento (ptdocemp)"),
       value: dropdownValue,
       icon: const Icon(Icons.arrow_drop_down),
       elevation: 16,

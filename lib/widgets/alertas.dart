@@ -99,7 +99,7 @@ Future<InformacionFormulario?> formularioEnvio(BuildContext context) async {
                   matricula: matriculaController.text,
                   tipoDocumentoPersonal: selectedValue,
                   respuesta: 'cancel',
-                  tipoDocumento: selectedValue,
+                  tipoDocumento: tipoDocumentoController.text,
                   comentarios: comentariosController.text);
               Navigator.of(context).pop(formInfo);
             },
@@ -120,7 +120,7 @@ Future<InformacionFormulario?> formularioEnvio(BuildContext context) async {
                   matricula: matriculaController.text,
                   tipoDocumentoPersonal: selectedValue,
                   respuesta: 'OK',
-                  tipoDocumento: selectedValue,
+                  tipoDocumento: tipoDocumentoController.text,
                   comentarios: comentariosController.text);
 
               Navigator.of(context).pop(formInfo);
