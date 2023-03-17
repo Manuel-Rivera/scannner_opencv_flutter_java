@@ -537,7 +537,8 @@ class Home extends StatelessWidget {
     request.fields['coments'] = 'Desde flutter';                  //Comentarios
     request.fields['arch_alumno'] = formInfo.matricula;           //Matricula del alumno que le corresponde el archivo
     request.fields['arch_nombre'] = document.name;                //Nombre real del archivo
-    request.fields['arch_ctype'] = formInfo.tipoDocumento;        //Tipo de archivo
+                                                                  //Tipo de documento (Por defecto es PDF)
+    request.fields['arch_ctype'] = formInfo.tipoDocumento.isNotEmpty ? formInfo.tipoDocumento : "PDF";
     request.fields['arch_size'] = file.lengthSync().toString();   //Tamaño del archivo en bytes
     request.fields['arch_tdoc'] = formInfo.tipoDocumentoPersonal; //Tipo de documento
     request.fields['arch_boveda'] = '1';                          //Identificador en la boveda

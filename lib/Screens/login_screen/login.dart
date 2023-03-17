@@ -104,17 +104,23 @@ class _LoginState extends State<Login> {
                               //Login correcto
                               if (login == 1) {
                                 //Consulta la lista de Tipos de documentos de la base de datos
-                                List<DropdownMenuItem<String>> dropdownTDocums = await StringToDropdownlist(context);
-                                //Almacena la lista en un Provider en forma de list<DropdownMenuItem<String>>
-                                Provider.of<tipoDocumentoProvider>(context, listen: false).setListaTDocums(dropdownTDocums);
-                                //Cambia el estado del login para que no este cargando
-                                Provider.of<LoginProvider>(context, listen: false).cambiarCargando(false);
-                                //Llamada a una nueva ventana
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const Home()),
-                                );
+                                Tuple2<int,List<DropdownMenuItem<String>>> response = await StringToDropdownlist(context);
+                                if(response.item1 == 1){
+                                  //Almacena la lista en un Provider en forma de list<DropdownMenuItem<String>>
+                                  Provider.of<tipoDocumentoProvider>(context, listen: false).setListaTDocums(response.item2);
+                                  //Cambia el estado del login para que no este cargando
+                                  Provider.of<LoginProvider>(context, listen: false).cambiarCargando(false);
+                                  //Llamada a una nueva ventana
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const Home()),
+                                  );
+                                }
+                                else{
+                                    Provider.of<LoginProvider>(context, listen: false).cambiarCargando(false);
+                                    muestraAlerta(context, "Error del servidor: Carga de tipos de documentos ");
+                                }
                               } else {
                                 //Error en login
                                 Provider.of<LoginProvider>(context, listen: false).cambiarCargando(false);
@@ -183,7 +189,7 @@ class _LoginState extends State<Login> {
   }
 
   //Envia una peticion para obtener los tipos de documentos que maneja la base de datos
-  Future<String> stringTdocum(BuildContext context) async {
+  Future<Tuple2<int, String>> stringTdocum(BuildContext context) async {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('http://148.216.31.181:8080/siia/getPTDOCEMP'),
@@ -196,34 +202,49 @@ class _LoginState extends State<Login> {
       // Send the request and get the response
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
-      //var responseBody = "";
       
-      return responseBody;
+      //Convierte la respuesta a JSON
+      var jsonResponse = json.decode(responseBody);
+      if (jsonResponse.containsKey('ERROR')) {
+          return Tuple2(0, jsonResponse["ERROR"]);
+        }
+       
+      return Tuple2(1, responseBody);
     } catch (e) {
-      return "";
+      return Tuple2(0, e.toString());
     }
   }
 
 
 //Funcion que crea una lista de DropdownMenuItem en base a una peticion POST a la base de datos
-Future<List<DropdownMenuItem<String>>> StringToDropdownlist(BuildContext context) async{
-  // Obtiene una cadena en forma de JSON que representa todos los tipos de documentos 
-  String tdocum = await stringTdocum(context);
-  // Elimina caracteres inecesarios 
-  //List<String> parts = tdocum.replaceAll("{", "").replaceAll("}", "").replaceAll('"', "").replaceAll(",OK:OK", "").split(", ");
-  List<String> parts = tdocum.replaceAll(RegExp(r'[{}"]+'), '').replaceAll(",OK:OK", "").split(', ');
-  parts[0] = parts[0].substring(parts[0].lastIndexOf(":")+1);
-  // Ordena la lista alfabeticamente por las subcadenas que representan el "NOMBRE" del tipo de documento
-  parts.sort((a, b) => a.substring(a.lastIndexOf("=")).compareTo(b.substring(b.lastIndexOf("="))));
-  List<DropdownMenuItem<String>> dropdownItems = parts.map((part) {
-  List<String> pair = part.split("=");
-  return DropdownMenuItem(
-      value: pair[0],
-      child: Text(pair[1]),
-    );
-  }).toList();
+Future<Tuple2<int,List<DropdownMenuItem<String>>>> StringToDropdownlist(BuildContext context) async{
+  Tuple2<int, String> resultado = await stringTdocum(context);
+  int result = resultado.item1;
+  String resp = resultado.item2;
+  
+  print("resp: $resp"); 
+  if(result==1){
+    // Obtiene una cadena en forma de JSON que representa todos los tipos de documentos 
+    String tdocum = resp;
+    // Elimina caracteres inecesarios 
+    //List<String> parts = tdocum.replaceAll("{", "").replaceAll("}", "").replaceAll('"', "").replaceAll(",OK:OK", "").split(", ");
+    List<String> parts = tdocum.replaceAll(RegExp(r'[{}"]+'), '').replaceAll(",OK:OK", "").split(', ');
+    parts[0] = parts[0].substring(parts[0].lastIndexOf(":")+1);
+    // Ordena la lista alfabeticamente por las subcadenas que representan el "NOMBRE" del tipo de documento
+    parts.sort((a, b) => a.substring(a.lastIndexOf("=")).compareTo(b.substring(b.lastIndexOf("="))));
+    List<DropdownMenuItem<String>> dropdownItems = parts.map((part) {
+    List<String> pair = part.split("=");
+    return DropdownMenuItem(
+        value: pair[0],
+        child: Text(pair[1]),
+      );
+    }).toList();
 
-  return dropdownItems;
+    return Tuple2(result, dropdownItems);
+  }
+
+  return Tuple2(0, []);
+
 }
 
 }

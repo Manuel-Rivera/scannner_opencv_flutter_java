@@ -87,7 +87,7 @@ Future<InformacionFormulario?> formularioEnvio(BuildContext context) async {
               TextFormField(
                 controller: tipoDocumentoController,
                 decoration:
-                    const InputDecoration(hintText: "Tipo de documento"),
+                    const InputDecoration(hintText: "Tipo de documento: default PDF"),
               ),
             ],
           ),
