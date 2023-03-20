@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart';
 
@@ -24,10 +24,24 @@ class _NewImageState extends State<NewImage> {
   late double width, height;
   late Size imagePixel;
   late Uint8List imagebytes = Uint8List(0);
+  MethodChannel channel = const MethodChannel('opencv');
+
   @override
   void initState() {
     super.initState();
-    imageToUint8List(widget.file.path);
+    getCornersImage(widget.file.path);
+    // imageToUint8List(widget.file.path);
+  }
+
+  Future<void> getCornersImage(String imgpath) async {
+    Uint8List imgbytes =
+        await channel.invokeMethod("getCorners", {"imagePath": imgpath});
+    //!Se obtienen las dimeciones de la imagen real
+    imagePixel = ImageSizeGetter.getSize(FileInput(widget.file));
+
+    setState(() {
+      imagebytes = imgbytes;
+    });
   }
 
   Future<Uint8List> imageToUint8List(String imagePath) async {
