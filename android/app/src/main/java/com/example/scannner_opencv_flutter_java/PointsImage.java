@@ -89,7 +89,8 @@ public class PointsImage {
 
     //Se realiza la busqueda de un cuadrado o rectangulo a partir de las esquinas obtenidas
     public MatOfPoint SearchSquare(MatOfPoint corners){
-        MatOfPoint largestSquare = null;
+
+        /*MatOfPoint largestSquare = null;
         double largestArea = 0;
         MatOfPoint2f approxCurve = new MatOfPoint2f();
         MatOfPoint2f contour2f = new MatOfPoint2f(corners.toArray());
@@ -107,6 +108,7 @@ public class PointsImage {
             }
         }
 
+        return largestSquare;*/
         return corners;
     }
 

@@ -74,8 +74,13 @@ public class MainActivity extends FlutterActivity {
                     Points.GetLargerContour(MOrigImg);
                 //Se afina la busqueda de contornos retornando las esquinas
                     MatOfPoint BestCorners=Points.RefineContours(listcontours);
+
+                //Se realiza la busqueda del cuadrado a partir de las esquinas obtenidas del mejor contorno
+                MatOfPoint CornersSquare=Points.SearchSquare(BestCorners);
+
                 //Se pintan las equinas  sobre la imagen
                     Mat MOrigImgContours=Points.PaintCorners(BestCorners,MOrigImg);
+
                 //TODO:Pendiente afinar la clasificación de contornos con algun metodo
                 //Se clasifica la lista de contornos obtenidos y se obtiene la imagen original pintando los contornos obtenidos
                     //Mat MOrigImgContours = Points.ClassiFyContounrs(listcontours,MOrigImg);
