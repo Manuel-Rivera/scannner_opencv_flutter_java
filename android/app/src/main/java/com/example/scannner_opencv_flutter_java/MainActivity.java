@@ -51,15 +51,48 @@ public class MainActivity extends FlutterActivity {
         super.configureFlutterEngine(flutterEngine);
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(),"opencv").setMethodCallHandler((call, result) -> {
 
+
             if(call.method.equals("getCorners")) {
-                //Bitmap de entrada imagen original
-                Bitmap BInImage = BitmapFactory.decodeFile(call.argument("imagePath").toString());
-                //Se obtiene el alto y ancho de la imagen
+                if (OpenCVLoader.initDebug()) {
+                    //Bitmap de entrada imagen original
+                    Bitmap BInImage = BitmapFactory.decodeFile(call.argument("imagePath").toString());
+
+                //Se instancia la clase points image
+                //constructor Bitmap Image se pasa como parametro Bitmapde la Imagen
+                    PointsImage Points =new PointsImage(BInImage);
+                //Se obtiene la matriz de la imagen original
+                    Mat MOrigImg=Points.GetMOriginalImg();
+
+                //Se obtiene la matriz escala de grises de la imagen original
+                    Mat grayImg=Points.GetMGrayImg(MOrigImg);
+                //Se obtienen los contornos externos mediante el metodo canny se requiere como parametro la imagen en escala de grises y se retorna una matriz con los contornos
+                    Mat cannyImg=Points.GetContour(MOrigImg);
+
+                //Se buscan los contornos de acuerdo a los contornos obtenidos por canny
+                    List<MatOfPoint> listcontours=Points.SearchContourns(MOrigImg);
+                //Se obtiene el contorno mas grande
+                    Points.GetLargerContour(MOrigImg);
+                //Se afina la busqueda de contornos retornando las esquinas
+                    MatOfPoint BestCorners=Points.RefineContours(listcontours);
+                //Se pintan las equinas  sobre la imagen
+                    Mat MOrigImgContours=Points.PaintCorners(BestCorners,MOrigImg);
+                //TODO:Pendiente afinar la clasificación de contornos con algun metodo
+                //Se clasifica la lista de contornos obtenidos y se obtiene la imagen original pintando los contornos obtenidos
+                    //Mat MOrigImgContours = Points.ClassiFyContounrs(listcontours,MOrigImg);
+
+                //Metodo usado para convertir una Matriz -> Bitmap-> bytearray
+                    byte[] byteArray =Points.GetBytesImg(MOrigImgContours);
+                    result.success(byteArray);
+
+
+
+
+                /*
+                    //Se obtiene el alto y ancho de la imagen
                 int height = BInImage.getHeight();
                 System.out.println(height);
                 int width = BInImage.getWidth();
                 System.out.println(width);
-                if (OpenCVLoader.initDebug()) {
                     //Matriz de entrada imagen original
                     Mat MInImg=new Mat();
                     //Matriz de salida
@@ -67,16 +100,27 @@ public class MainActivity extends FlutterActivity {
                     //Se pasa BitMap -> Matriz
                     Utils.bitmapToMat(BInImage,MInImg);
 
+                    // Crear un kernel de tamaño 5x5 con todos los elementos iguales a 1
+                    //Mat kernel = Mat.ones(new Size(5, 5), CvType.CV_8UC1);
+                    //Aplicar la operación de cierre repetido para eliminar el texto del documento
+                    //Imgproc.morphologyEx(MInImg, MInImg, Imgproc.MORPH_CLOSE, kernel, new Point(-1,-1), 1);
+
+
                     //Se convierte la imagen a scalade griese
                     Mat gray=new Mat();
                     Imgproc.cvtColor(MInImg,gray,Imgproc.COLOR_BGR2GRAY);
 
+                    //Se aplica GausianBluer
+                    //Mat gbluer=new Mat();
+                    //Imgproc.GaussianBlur(gray,gbluer,new Size(3,3),0);
+                    //gbluer.copyTo(gray);
 
                     //Se obtienen los contornos externos
                     Mat canny= new Mat();
                     Imgproc.Canny(gray,canny,10,150);
                     Mat dilateKer = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(5, 5));
                     Imgproc.dilate(canny, canny, dilateKer);
+
 
 
                     //Encontrar los contornos
@@ -95,7 +139,7 @@ public class MainActivity extends FlutterActivity {
                     for(MatOfPoint c : contours){
                         double AreaEachContour=Imgproc.contourArea(c);
                         //Se imprime el area de cada contorno
-                        System.out.println(AreaEachContour);
+                        //System.out.println(AreaEachContour);
                         double epsilon = 0.01 * Imgproc.arcLength(new MatOfPoint2f(c.toArray()), true);
                         MatOfPoint2f corners2f = new MatOfPoint2f();
                         //Se obtienen los vertices
@@ -105,28 +149,31 @@ public class MainActivity extends FlutterActivity {
 
                             //Si el numero de vertices es igual a 4 sabemos que se trata de un rectangulo
                             MatOfPoint corners = new MatOfPoint(corners2f.toArray());
-                            System.out.println(corners.height());
-                            //Se se tienen 4 vertices
-                            if (corners.size().height == 4) {
+                            //System.out.println("nContornos"+corners.height());
+                            //Si se tiene mas de 3 vertices muy seguramente es un cuadrado y si el area del elemento coincide con el del contoro mas grande
+                            if (corners.size().height >= 3 && AreaEachContour == Imgproc.contourArea(Count)) {
                                 //Linea azul sobre la imagen original
                                 Imgproc.drawContours(MInImg, Arrays.asList(c), -1, new Scalar(0, 255, 255), 15);
                                 //Linea amarilla sobre la imagen original
                                 Imgproc.drawContours(MInImg, Arrays.asList(corners), -1, new Scalar(0, 255, 0), 5);
 
                                 //Se pintan los vertices de interes
-                                Imgproc.circle(MInImg,corners.toArray()[0], 25,new Scalar(255,0,0),15);
-                                Imgproc.circle(MInImg,corners.toArray()[1], 25,new Scalar(255,0,0),15);
-                                Imgproc.circle(MInImg,corners.toArray()[2], 25,new Scalar(255,0,0),15);
-                                Imgproc.circle(MInImg,corners.toArray()[3], 25,new Scalar(255,0,0),15);
+                                for (Point point: corners.toArray()){
+                                    System.out.println(point);
+                                    Imgproc.circle(MInImg,point, 15,new Scalar(255,0,0),15);
+                                }
+                                //Imgproc.circle(MInImg,corners.toArray()[0], 25,new Scalar(255,0,0),15);
+                                //Imgproc.circle(MInImg,corners.toArray()[1], 25,new Scalar(255,0,0),15);
+                                //Imgproc.circle(MInImg,corners.toArray()[2], 25,new Scalar(255,0,0),15);
+                                //Imgproc.circle(MInImg,corners.toArray()[3], 25,new Scalar(255,0,0),15);
 
-                                break;
+                            //    break;
                             }
-                    }
-
+                    }*/
 
 
                     //Matriz -> to MOutImg
-                    MInImg.copyTo(MOutImg);
+                    //MInImg.copyTo(MOutImg);
 
 
 
@@ -264,40 +311,33 @@ public class MainActivity extends FlutterActivity {
 
 
                     //Bitmap de salida Matriz -> Bitmap
-                    Bitmap OutImg = Bitmap.createBitmap(MOutImg.cols(), MOutImg.rows(), Bitmap.Config.ARGB_8888);
+                    //Bitmap OutImg = Bitmap.createBitmap(MOutImg.cols(), MOutImg.rows(), Bitmap.Config.ARGB_8888);
 
                     //Se conviert matriz a bitmap
-                    Utils.matToBitmap(MOutImg,OutImg);
+                    //Utils.matToBitmap(MOutImg,OutImg);
 
                     //!RESCALE IMAGE
                     //bitmap=Bitmap.createScaledBitmap(bmp,2480,3508,true);
 
+
                     //!PREPARING BITMAP TO SEND IN BYTEARRAY ON FORMAT JPGE
-                    ByteArrayOutputStream stream=new ByteArrayOutputStream();
-                    OutImg.compress(Bitmap.CompressFormat.JPEG,100,stream);
-                    byte[] byteArray=stream.toByteArray();
-                    result.success(byteArray);
+                    //ByteArrayOutputStream stream=new ByteArrayOutputStream();
+                    //OutImg.compress(Bitmap.CompressFormat.JPEG,100,stream);
+                    //byte[] byteArray=stream.toByteArray();
+
+                    //Metodo usado para convertir una Matriz -> Bitmap-> bytearray
+                    //byte[] byteArray =Points.GetBytesImg(MOutImg);
+                    //result.success(byteArray);
                 }
             }
 
             if (call.method.equals("convertToGray")){
                 System.out.println("convertToGray");
                 byte[] imageBytes=call.argument("imageBytes");
-                //!READ IMAGE
-                Bitmap bitmap= BitmapFactory.decodeByteArray(imageBytes,0,imageBytes.length);
 
-                //Se ajusta imagen acorde a su orientación
-                int orientation;
-                try {
-                    ExifInterface exif = new ExifInterface(new ByteArrayInputStream(imageBytes));
-                    orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                int angle=getRotationAngle(orientation);
-                Matrix matrix=new Matrix();
-                matrix.postRotate(angle);
-                bitmap =Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),matrix,true);
+                //Se orienta la imagen ya que en ocaciones no se reconocen los metadatos EXIF
+                //Rebibe byte[] -> return Bitmap
+                Bitmap bitmap=orientImage(imageBytes);
 
 
                 //!GET WIDTH AND HEIGHT TO IMAGE
@@ -463,6 +503,28 @@ public class MainActivity extends FlutterActivity {
         });
     }
 
+    //Se ajusta la imagen acorde a su orientacion de sus metadatos EXIF
+    private Bitmap orientImage(byte[] imageBytes){
+        //Bytes de image a orientar se convierten BitMap
+        Bitmap bitmap= BitmapFactory.decodeByteArray(imageBytes,0,imageBytes.length);
+        int orientation;
+
+        try {
+            ExifInterface exif = new ExifInterface(new ByteArrayInputStream(imageBytes));
+            orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //Se obtiene el angulo de orientación
+        int angle=getRotationAngle(orientation);
+        //Se crea matriz de orienrtación
+        Matrix matrix=new Matrix();
+        //Se crea una matriz de orientación en base al angulo obtenido
+        matrix.postRotate(angle);
+        //Se retorna el bitmap de la imagen orientada a partir de la matriz de orientación matrix
+        return Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),matrix,true);
+    }
+    //Se obtiene el angulo de la imagen a orientar de acuerdo a los metadatos EXIF para la posterior orientación
     private int getRotationAngle(int orientation) {
         int angle;
         switch (orientation) {
