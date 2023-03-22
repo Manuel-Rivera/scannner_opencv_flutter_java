@@ -10,8 +10,7 @@ import '../../Providers/tipo_documentos_provider.dart';
 import '../../ui/input_decorations.dart';
 import '../../widgets/widgets.dart';
 import '../home_screen/home.dart';
-
-//String idSesion ="";
+import '../../Request/request.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -24,7 +23,6 @@ class _LoginState extends State<Login> {
   final TextEditingController userController = TextEditingController();
   final TextEditingController paswordController = TextEditingController();
   final GlobalKey<FormState> keyLogin = GlobalKey<FormState>();
-  //bool cargando = false;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +91,7 @@ class _LoginState extends State<Login> {
                           if (!context
                               .read<LoginProvider>()
                               .obtenerCargando()) {
-                            //Evita una multiples llamadas al Login si ya hay una en proceso}
+                            //Evita una multiples llamadas al Login si ya hay una en proceso
                             //Llamada al login
                             callLogin(context, userController.text,
                                     paswordController.text)
@@ -151,83 +149,17 @@ class _LoginState extends State<Login> {
     );
   }
 
-  //Post al login del servlet
-  Future<Tuple2<int, String>> callLogin(
-      BuildContext context, String usr, String pwd) async {
-    Provider.of<LoginProvider>(context, listen: false).cambiarCargando(true);
-
-    try {
-      final response = await http.post(
-        Uri.parse('http://148.216.31.181:8080/siia/respLogin'),
-        body: {
-          'usr': usr,
-          'pwd': pwd,
-          'B1': 'entrar',
-          'TAB': '1',
-        },
-      );
-
-      var jsonResponse = json.decode(response.body);
-      //Verificacion de la respuesta del servidor
-
-      if (response.statusCode == 200) {
-        if (jsonResponse.containsKey('ERROR')) {
-          return Tuple2(0, jsonResponse["ERROR"]);
-        }
-
-        if (jsonResponse.containsKey('OK')) {
-          context.read<LoginProvider>().estableceIdSesion(
-              jsonResponse["JSESSIONID"], jsonResponse["USR"]);
-          return const Tuple2(1, "OK");
-        }
-      }
-      return Tuple2(0, response.statusCode.toString());
-    } catch (e) {
-      Provider.of<LoginProvider>(context, listen: false).cambiarCargando(false);
-      return Tuple2(0, e.toString());
-    }
-  }
-
-  //Envia una peticion para obtener los tipos de documentos que maneja la base de datos
-  Future<Tuple2<int, String>> stringTdocum(BuildContext context) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://148.216.31.181:8080/siia/getPTDOCEMP2'),
-    );
-
-    // Set the session ID as a cookie in the request headers
-    request.headers['cookie'] =
-        'JSESSIONID=${Provider.of<LoginProvider>(context, listen: false)}';
-    try {
-      // Send the request and get the response
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
-      
-      //Convierte la respuesta a JSON
-      var jsonResponse = json.decode(responseBody);
-      if (jsonResponse.containsKey('ERROR')) {
-          return Tuple2(0, jsonResponse["ERROR"]);
-        }
-       
-      return Tuple2(1, responseBody);
-    } catch (e) {
-      return Tuple2(0, e.toString());
-    }
-  }
-
-
+  
 //Funcion que crea una lista de DropdownMenuItem en base a una peticion POST a la base de datos
 Future<Tuple2<int,List<DropdownMenuItem<String>>>> StringToDropdownlist(BuildContext context) async{
   Tuple2<int, String> resultado = await stringTdocum(context);
   int result = resultado.item1;
   String resp = resultado.item2;
-  
-  print("resp: $resp"); 
+
   if(result==1){
     // Obtiene una cadena en forma de JSON que representa todos los tipos de documentos 
     String tdocum = resp;
     // Elimina caracteres inecesarios 
-    //List<String> parts = tdocum.replaceAll("{", "").replaceAll("}", "").replaceAll('"', "").replaceAll(",OK:OK", "").split(", ");
     List<String> parts = tdocum.replaceAll(RegExp(r'[{}"]+'), '').replaceAll(",OK:OK", "").split(', ');
     parts[0] = parts[0].substring(parts[0].lastIndexOf(":")+1);
     // Ordena la lista alfabeticamente por las subcadenas que representan el "NOMBRE" del tipo de documento
