@@ -175,6 +175,17 @@ public class PointsImage {
         return gray;
     }
 
+
+    //Se obtiene Matriz de blanco y negro de la imagen original
+    public Mat GetMBlackWite(Mat MOriginalImg){
+        //Obtencion de la imagen en escala de grises
+        Mat blackWite=new Mat();
+        Mat gray=GetMGrayImg(MOriginalImg);
+        //Recoloracion de la imagen en blanco y megro absoluto
+        Imgproc.threshold(gray,blackWite,120,255,0);
+        return blackWite;
+    }
+
     //Se obtiene Matriz de la de la Imagen original
     public Mat GetMOriginalImg(){
         return this.MOriginalImg;

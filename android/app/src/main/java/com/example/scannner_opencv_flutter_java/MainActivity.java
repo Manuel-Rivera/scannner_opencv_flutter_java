@@ -65,13 +65,16 @@ public class MainActivity extends FlutterActivity {
 
                 //Se obtiene la matriz escala de grises de la imagen original
                     Mat grayImg=Points.GetMGrayImg(MOrigImg);
+                //Se obtiene la matriz en blanco y negro
+                    Mat bwImg=Points.GetMBlackWite(MOrigImg);
+                
                 //Se obtienen los contornos externos mediante el metodo canny se requiere como parametro la imagen en escala de grises y se retorna una matriz con los contornos
                     Mat cannyImg=Points.GetContour(MOrigImg);
 
                 //Se buscan los contornos de acuerdo a los contornos obtenidos por canny
-                    List<MatOfPoint> listcontours=Points.SearchContourns(MOrigImg);
+                    List<MatOfPoint> listcontours=Points.SearchContourns(bwImg);
                 //Se obtiene el contorno mas grande
-                    Points.GetLargerContour(MOrigImg);
+                    Points.GetLargerContour(grayImg);
                 //Se afina la busqueda de contornos retornando las esquinas
                     MatOfPoint BestCorners=Points.RefineContours(listcontours);
 
@@ -79,7 +82,7 @@ public class MainActivity extends FlutterActivity {
                 MatOfPoint CornersSquare=Points.SearchSquare(BestCorners);
 
                 //Se pintan las equinas  sobre la imagen
-                    Mat MOrigImgContours=Points.PaintCorners(BestCorners,MOrigImg);
+                    Mat MOrigImgContours=Points.PaintCorners(BestCorners,grayImg);
 
                 //TODO:Pendiente afinar la clasificación de contornos con algun metodo
                 //Se clasifica la lista de contornos obtenidos y se obtiene la imagen original pintando los contornos obtenidos
